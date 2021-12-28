@@ -9,42 +9,6 @@ import flask
 import os
 from flask import Flask, render_template_string, redirect, request
 
-# Load Webpage strings
-# homePage = '''
-# <!doctype html>
-# <html>
-#     <head>
-#         <!-- Bootstrap CSS -->
-#         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-#     </head>
-#     <body>
-#         <div class="container" style="padding:10px">
-#                 <div class="card mb-3 h-100">
-#                     <div class="card-header">Welcome to socAIl! Please Enter your User ID Below </div>
-#                     <div class="card-body">
-#                         <form method="POST" action="setUser">
-#                             <div class="form-group" role="group" >
-#                                 <label for="setUser">Please Enter Your User ID Here</label>
-#                                 <input type="text" class="form-control" id="setUser" placeholder="@ESPN" name=user>
-#                             </div>
-#                                 <button type="submit" class="btn btn-primary">Submit</button>
-#                             </div>
-#                         </form>
-#                     </div>
-#                 </div>
-#         </div>
-#     </body>
-# </html>    '''
-# returnPage = '''
-# <!doctype html>
-# <html>
-#    <body>
-#      <strong>{} Profane Tweets Found</strong>
-#      <strong>{text}</strong>
-#    </body>
-# </html>
-# '''
-
 def HtmlIntake(path):
     with open(path) as f:
         lines = f.readlines()
@@ -125,7 +89,7 @@ def initWebsite(homePage, returnPage):
         user = request.form["user"]
         temp_df = main(user)
         p_count = str(temp_df.shape[0])
-        return render_template_string(returnPage.replace('{}', p_count).replace('{text}',str(temp_df.text.values)))
+        return render_template_string(returnPage.replace('{}', p_count).replace('{text}',temp_df.to_html()))
 
     app.run(debug=False)
 
