@@ -7,7 +7,9 @@ import re
 import json
 import flask
 import os
-from flask import Flask, render_template_string, redirect, request
+import datetime
+from flask import Flask, render_template_string, redirect, request, render_template
+
 
 def HtmlIntake(path):
     with open(path) as f:
@@ -15,7 +17,7 @@ def HtmlIntake(path):
     return ''.join(lines)
 
 def loadWords():
-    f = open("../Docs/profane_words.json", 'r')
+    f = open("profane_words.json", 'r')
     bad_words = json.load(f)
     return bad_words
 
@@ -32,7 +34,7 @@ def scrape_tl_username(name):
     temp_list =[]
     for status in tweepy.Cursor(api.user_timeline, screen_name=name, tweet_mode="extended").items():
         temp_list.append((status.full_text, status.created_at))
-    timeline_df = pd.DataFrame(temp_list, columns=['text','date'])
+    timeline_df = pd.DataFrame(temp_list, columns=['Tweet','date_full'])
     return timeline_df
 
 def scrape_tl(uid, count):
@@ -60,12 +62,13 @@ def flag_check(flag_list, text):
         if len(re.findall(f" {flag} ", text)) > 0:
             flag_count += 1
             flags_found.append(flag)
-    return flag_count, flags_found
+    return flags_found
 
 
 def flagDFProces(df):
-    df['flags'] = df['text'].apply(lambda x: flag_check(bad_words, x))
-    df['occurance'] = df['flags'].apply(lambda x: 1 if x[0] > 0 else 0)
+    df['Profane Words'] = df['Tweet'].apply(lambda x: flag_check(bad_words, x))
+    df['occurance'] = df['Profane Words'].apply(lambda x: 1 if len(x)>0 else 0)
+    df['Date'] = df['date_full'].apply(lambda x: datetime.datetime.date(x))
     return df
 
 #  Per request
@@ -77,7 +80,7 @@ def main(user_id):
     print(f"{profane_df.shape[0]} Profane Tweets Found")
     return profane_df
 
-def initWebsite(homePage, returnPage):
+def initWebsite(returnPage):
     app = Flask(__name__)
 
     @app.route("/", methods=['GET'])
@@ -87,6 +90,7 @@ def initWebsite(homePage, returnPage):
     @app.route("/setUser", methods=["POST"])
     def setUser():
         user = request.form["user"]
+        render_template_string(fetchTweetsPage)
         temp_df = main(user)
         p_count = str(temp_df.shape[0])
         return render_template_string(returnPage.replace('{}', p_count).replace('{text}',temp_df.to_html()))
@@ -97,9 +101,11 @@ def initWebsite(homePage, returnPage):
 #  initialization
 bad_words = loadWords()
 api = initTwitter()
-homePage = HtmlIntake("../Scripts/html/homepage.html")
-returnPage = HtmlIntake("../Scripts/html/returnPage.html")
-initWebsite(homePage,returnPage)
+homePage = HtmlIntake("templates/homepage.html")
+# inputPage = HtmlIntake("../Scripts/html/templates/Input.html")
+fetchTweetsPage = HtmlIntake("templates/Fetching_tweets.html")
+returnPage = HtmlIntake("templates/returnPage.html")
+initWebsite(returnPage)
 print("Initialization Complete http://127.0.0.1:5000/ ")
 
 
