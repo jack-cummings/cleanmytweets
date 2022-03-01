@@ -51,9 +51,7 @@ def inituserOauth():
         redirect_uri="http://127.0.0.1:5000/return",
         scope=["tweet.read", "tweet.write", "users.read"],
         # Client Secret is only necessary if using a confidential client
-        client_secret=os.environ['CLIENT_SECRET']
-
-    )
+        client_secret=os.environ['CLIENT_SECRET'])
 
     return oauth2_user_handler
 
@@ -89,8 +87,10 @@ def initWebsite(returnPage):
     def results():
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
         access_token = app.auth.fetch_token(request.url)
-        client = tweepy.Client(access_token)
-        #print(request.url)
+        client = tweepy.Client(access_token['access_token'])
+
+        username = client.get_me(user_auth=False).data.username
+
 
         return render_template_string(returnPage)
 
