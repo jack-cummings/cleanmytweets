@@ -19,28 +19,12 @@ def HtmlIntake(path):
 def loadWords():
     f = open("profane_words.json", 'r')
     bad_words = json.load(f)
-    return bad_words
+    bad_words_pattern =' | '.join(bad_words)
+    return bad_words_pattern, bad_words
 
-
-def scrape_tl(uid, count):
-    """Function to collect user's timeline. UID is user ID number count is number of tweets to check. Max 32k"""
-    out_text = []
-    temp_list = []
-    min_id = api.get_timelines(uid, max_results=5).data[0].id
-    while len(out_text) < int(count):
-        resp = api.get_timelines(uid, max_results=100, until_id=min_id)
-        resp.data
-        min_id = resp.data[-1].id
-        for i in resp.data:
-            out_text.append(i)
-    out_text
-    for item in out_text:
-        temp_list.append([item.id, item.text])
-    timeline_df = pd.DataFrame(temp_list, columns=['id', 'text'])
-    return timeline_df
 
 def flagDFProces(df):
-    df['Profane Words'] = df['Tweet'].apply(lambda x: flag_check(bad_words, x))
+    df['Profane Words'] = df['Text'].apply(lambda x: re.findall(bad_words_pattern,x))
     df['occurance'] = df['Profane Words'].apply(lambda x: 1 if len(x) > 0 else 0)
     df['Date'] = df['date_full'].apply(lambda x: datetime.datetime.date(x))
     return df
@@ -55,14 +39,11 @@ def inituserOauth():
 
     return oauth2_user_handler
 
-  #  return oauth2_user_handler.get_authorization_url()
-
 
 
 #  Per request
 def main(user_id):
     #df = scrape_tl_username(user_id)
-
     total_count = df.shape[0]
     print(f"Timeline Scrape Complete {total_count} tweet's collected")
     processed_df = flagDFProces(df)
@@ -89,10 +70,39 @@ def initWebsite(returnPage):
         access_token = app.auth.fetch_token(request.url)
         client = tweepy.Client(access_token['access_token'])
 
-        username = client.get_me(user_auth=False).data.username
+        user = client.get_me(user_auth=False)
+        username= user.data.username
+        user_id = user.data.id
+
+        tweets_out=[]
+        for tweet in tweepy.Paginator(client.get_users_tweets, id=user_id,
+                                      tweet_fields=['id', 'text', 'created_at'], max_results=100).flatten(limit=300):
+
+            tweets_out.append([tweet.id, tweet.text, tweet.created_at])
+
+        timeline_df = pd.DataFrame(tweets_out, columns=['Tweet ID', 'Text', 'date_full'])
+        tweet_count = timeline_df.shape[0]
+        app.df = timeline_df
+        app.user = username
+
+        return render_template_string(tweetCountPage.replace('{tweet_count}', str(tweet_count)))
+
+    @app.route("/scan_tweets", methods=["POST","GET"])
+    def scan_tweets():
+        df = app.df
+        total_count = df.shape[0]
+        out_df = flagDFProces(df)
+        prof_df = out_df[out_df['occurance']==1]
+        p_count = prof_df.shape[0]
+
+        return render_template_string(returnPage
+                                      .replace('{p_count}', str(p_count))
+                                      .replace('{table}', prof_df.drop(['date_full', 'occurance'], 1).to_html())
+                                      .replace('{total_count}', str(total_count))
+                                      .replace('{user}', app.user)
+                                      )
 
 
-        return render_template_string(returnPage)
 
     @app.route("/setUser", methods=["POST"])
     def setUser():
@@ -112,11 +122,12 @@ def initWebsite(returnPage):
 
 
 #  initialization
-bad_words = loadWords()
+bad_words_pattern, bad_words = loadWords()
 homePage = HtmlIntake("templates/homepage2.html")
 fetchTweetsPage = HtmlIntake("templates/Fetching_tweets.html")
 returnPage = HtmlIntake("templates/returnPage2.html")
 index = HtmlIntake("templates/index.html")
+tweetCountPage = HtmlIntake("templates/tweet_count.html")
 initWebsite(returnPage)
 
 
