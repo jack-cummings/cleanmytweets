@@ -80,10 +80,11 @@ def initWebsite(returnPage):
 
             tweets_out.append([tweet.id, tweet.text, tweet.created_at])
 
-        timeline_df = pd.DataFrame(tweets_out, columns=['Tweet ID', 'Text', 'date_full'])
+        timeline_df = pd.DataFrame(tweets_out, columns=['Delete?', 'Text', 'date_full'])
         tweet_count = timeline_df.shape[0]
         app.df = timeline_df
         app.user = username
+        app.client = client
 
         return render_template_string(tweetCountPage.replace('{tweet_count}', str(tweet_count)))
 
@@ -93,16 +94,29 @@ def initWebsite(returnPage):
         total_count = df.shape[0]
         out_df = flagDFProces(df)
         prof_df = out_df[out_df['occurance']==1]
+
+        check_box = r"""<input type="checkbox" id="\1" name="tweet_id" value="\1">
+                                <label for="\1">  </label><br>"""
+        out_table_html = re.sub(r'(\d{18})', check_box, prof_df.drop(['date_full', 'occurance'], 1).to_html(index= False).replace('<td>', '<td align="center">'))
         p_count = prof_df.shape[0]
 
         return render_template_string(returnPage
                                       .replace('{p_count}', str(p_count))
-                                      .replace('{table}', prof_df.drop(['date_full', 'occurance'], 1).to_html())
+                                      .replace('{table}', out_table_html)
                                       .replace('{total_count}', str(total_count))
                                       .replace('{user}', app.user)
                                       )
 
+    @app.route("/selectTweets", methods=["POST"])
+    def selectTweets():
+        values = request.form.getlist("tweet_id")
+        if len(values) < 50:
+            for v in values:
+                app.client.delete_tweet(v, user_auth=False)
+        else:
+            return (over50Page)
 
+        return render_template_string(tweetsDeletedPage.replace('{count}', str(len(values))))
 
     @app.route("/setUser", methods=["POST"])
     def setUser():
@@ -128,6 +142,8 @@ fetchTweetsPage = HtmlIntake("templates/Fetching_tweets.html")
 returnPage = HtmlIntake("templates/returnPage2.html")
 index = HtmlIntake("templates/index.html")
 tweetCountPage = HtmlIntake("templates/tweet_count.html")
+tweetsDeletedPage = HtmlIntake("templates/Tweets_deleted.html")
+over50Page = HtmlIntake("templates/over50Page.html")
 initWebsite(returnPage)
 
 

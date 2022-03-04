@@ -18,7 +18,11 @@
       <p class="lead">{total_count} of {user}'s Tweets Reviewed  </p>
       <hr class="my-4">
       <p>We believe people should have to power to make informed decisions about their social media presence.</p>
-      <p>{table}</p>
+      <form method="POST" action="selectTweets">
+          <p>{table}</p>
+          <button type="submit" class="btn btn-primary">Delete Selected Tweets (can't be undone)</button>
+      </form>
+
   </div>
 
     <!-- Optional JavaScript -->
