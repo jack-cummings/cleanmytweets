@@ -40,18 +40,6 @@ def inituserOauth():
     return oauth2_user_handler
 
 
-
-#  Per request
-def main(user_id):
-    #df = scrape_tl_username(user_id)
-    total_count = df.shape[0]
-    print(f"Timeline Scrape Complete {total_count} tweet's collected")
-    processed_df = flagDFProces(df)
-    profane_df = processed_df[processed_df.occurance == 1]
-    print(f"{profane_df.shape[0]} Profane Tweets Found")
-    return profane_df, total_count
-
-
 def initWebsite(returnPage):
     app = Flask(__name__)
 
@@ -117,20 +105,6 @@ def initWebsite(returnPage):
             return (over50Page)
 
         return render_template_string(tweetsDeletedPage.replace('{count}', str(len(values))))
-
-    @app.route("/setUser", methods=["POST"])
-    def setUser():
-        user = request.form["user"]
-        render_template_string(fetchTweetsPage)
-        temp_df, total_count = main(user)
-        p_count = str(temp_df.shape[0])
-        # return render_template_string(returnPage.replace('{}', p_count).replace('{text}',temp_df.to_html()))
-        return render_template_string(returnPage
-                                      .replace('{p_count}', p_count)
-                                      .replace('{table}', temp_df.drop(['date_full','occurance'],1).to_html())
-                                      .replace('{total_count}', str(total_count))
-                                      .replace('{user}', user)
-                                      )
 
     app.run(debug=False)
 
