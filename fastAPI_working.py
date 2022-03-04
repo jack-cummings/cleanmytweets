@@ -52,5 +52,6 @@ index = HtmlIntake("templates/index.html")
 @app.get("/")
 async def home(request: Request):
     authorization_url = app.auth.get_authorization_url()
-    return template.render(index, {"request": request})
+
+    return Environment.from_string(index).render({"request": request})
    # return templates.TemplateResponse('index.html', {"request": request})
