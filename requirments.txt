@@ -1,0 +1,7 @@
+tweepy = 4.6.0
+pandas
+re
+json
+os
+datetime
+fastapi
