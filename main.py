@@ -7,7 +7,7 @@ import os
 import datetime
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
-#import uvicorn
+import uvicorn
 
 def HtmlIntake(path):
     with open(path) as f:
@@ -33,7 +33,9 @@ def inituserOauth():
     oauth2_user_handler = tweepy.OAuth2UserHandler(
         client_id=os.getenv('CLIENT_ID'),
         #redirect_uri="http://127.0.0.1:8080/return",
-        redirect_uri= 'http://0.0.0.0:5050/return',
+        #redirect_uri= 'http://0.0.0.0:5050/return',
+        redirect_uri='http://0.0.0.0:8000/return',
+        #redirect_uri='https://www.cleanmytweets.com/return',
         #5000
         scope=["tweet.read", "tweet.write", "users.read"],
         # Client Secret is only necessary if using a confidential client
@@ -67,7 +69,7 @@ async def results(request: Request):
 
     tweets_out=[]
     for tweet in tweepy.Paginator(client.get_users_tweets, id=user_id,
-                                  tweet_fields=['id', 'text', 'created_at'], max_results=100).flatten(limit=300):
+                                  tweet_fields=['id', 'text', 'created_at'], max_results=100).flatten(limit=200):
 
         tweets_out.append([tweet.id, tweet.text, tweet.created_at])
 
@@ -97,17 +99,18 @@ async def scan_tweets(request: Request):
                                                              'total_count':str(total_count),
                                                               'user': app.user})
 
-@app.route('/selectTweets')
+@app.post('/selectTweets')
 async def selectTweets(request: Request):
-    values = request.form.getlist("tweet_id")
+    body = await request.body()
+    values = body.decode("utf-8").replace('tweet_id=', '').split(',')
     if len(values) < 50:
         for v in values:
             app.client.delete_tweet(v, user_auth=False)
     else:
         return templates.TemplateResponse('over50Page.html', {'request':request})
 
-    return templates.TemplateResponse('tweetsDeletedPage.html', {'request': request,
+    return templates.TemplateResponse('Tweets_deleted.html', {'request': request,
                                                                  'count': str(len(values))})
-#
-# if __name__ == '__main__':
-#     uvicorn.run(app, port=5050, host='0.0.0.0')
+
+if __name__ == '__main__':
+    uvicorn.run(app, port=8000, host='0.0.0.0')
