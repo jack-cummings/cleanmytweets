@@ -1,1 +1,0 @@
-{"id":"0053529d-e201-42d2-8cc9-2d350ca3cc71","space":19179,"runtime":"python3.9","name":"deta_micro","path":"dvuhdd","project":"b0r9sexj","account":"144798365827","region":"us-east-1","deps":["tweepy==4.6.0","pandas","fastapi"],"envs":null,"public":true,"log_level":"debug","cron":""}
