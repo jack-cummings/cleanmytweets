@@ -103,7 +103,9 @@ async def scan_tweets(request: Request):
 async def selectTweets(request: Request):
     body = await request.body()
     values = body.decode("utf-8").replace('tweet_id=', '').split(',')
-    if len(values) < 50:
+    if values == [""]:
+        pass
+    elif len(values) < 50:
         for v in values:
             app.client.delete_tweet(v, user_auth=False)
     else:
