@@ -14,10 +14,10 @@
  <div class="container my-4">
 
     <div class="jumbotron">
-      <h1 class="display-4">{{ p_count }} Profane Tweets Found</h1>
-      <p class="lead">{{ total_count }} of {{ user }}'s Tweets Reviewed  </p>
+      <h1 class="display-4">{{ p_count }} Potentially Profane Tweets Found.</h1>
+      <p class="lead">{{ total_count }} of {{ user }}'s Tweets Reviewed.  </p>
+        <p class="lead">Please select the tweets you'd like to delete  </p>
       <hr class="my-4">
-      <p>We believe people should have to power to make informed decisions about their social media presence.</p>
       <form method="POST" action="selectTweets">
           <p>{{ table | safe}}</p>
           <button type="submit" class="btn btn-primary">Delete Selected Tweets (can't be undone)</button>

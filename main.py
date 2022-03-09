@@ -32,11 +32,8 @@ def flagDFProces(df):
 def inituserOauth():
     oauth2_user_handler = tweepy.OAuth2UserHandler(
         client_id=os.getenv('CLIENT_ID'),
-        #redirect_uri="http://127.0.0.1:8080/return",
-        #redirect_uri= 'http://0.0.0.0:5050/return',
         redirect_uri='http://0.0.0.0:8000/return',
         #redirect_uri='https://www.cleanmytweets.com/return',
-        #5000
         scope=["tweet.read", "tweet.write", "users.read"],
         # Client Secret is only necessary if using a confidential client
         client_secret=os.getenv('CLIENT_SECRET'))
@@ -113,6 +110,7 @@ async def selectTweets(request: Request):
 
     return templates.TemplateResponse('Tweets_deleted.html', {'request': request,
                                                                  'count': str(len(values))})
+
 
 if __name__ == '__main__':
     uvicorn.run(app, port=8000, host='0.0.0.0')
