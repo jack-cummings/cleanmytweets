@@ -1,4 +1,4 @@
-name: Deploy to Deta2
+name: Deploy to Deta
 on: push
 
 jobs:
