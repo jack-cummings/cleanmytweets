@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
   <head>
@@ -8,26 +7,39 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Hello, world!</title>
+    <title>Clean My Tweets</title>
+
+    <!-- Google Ads -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2675678183320337"
+     crossorigin="anonymous"></script>
+
   </head>
-  <body>
-    <div class="container" style="padding:10px">
-            <div class="card mb-3 h-100">
-                <div class="card-header">Welcome to socAIl! Please Enter your User ID Below </div>
-                <form method="POST" action="setUser">
-                    <div class="form-group" role="group" >
-                        <label for="setUser">Please Enter Your User ID Here</label>
-                        <input type="text" class="form-control" id="setUser" placeholder="@ESPN" name=user>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </form>
-            </div>
-            </div>
+ <div class="container my-4">
+
+    <div class="jumbotron">
+      <h1 class="display-4">Clean My Tweets </h1>
+      <p class="lead">Check your tweet history and decide what to keep and what to sweep. </p>
+      <hr class="my-4">
+      <b> In five minutes or less and all for free:</b>
+        <ul>
+        <li>Review your tweet history</li>
+        <li>Select the tweets you'd like to delete</li>
+        <li>Get on with your life!</li>
+        </ul>
+
+    <a class="btn btn-primary btn-lg" href={{ user_auth_link }} role="button"> Clean My Tweets!</a>
+    <p><small>Disclaimers: Cleanmytweets will only review up to 3000 tweets and does not guarantee to capture all profane or potentially offensive content.By selecting the above you are acknowledging these disclaimers </small></p>
+
+
+  </div>
+
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-  </body>
+
+ </div>
 </html>
