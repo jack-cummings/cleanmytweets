@@ -1,14 +1,15 @@
-# import pytwitter
-# from pytwitter import Api
 import tweepy
-import getpass
 import pandas as pd
 import re
 import json
-import flask
 import os
 import datetime
-from flask import Flask, render_template_string, redirect, request, render_template
+from fastapi import FastAPI
+from fastapi.templating import Jinja2Templates
+from jinja2 import Environment, BaseLoader
+from dotenv import load_dotenv
+
+app = FastAPI()
 
 def HtmlIntake(path):
     with open(path) as f:
@@ -17,7 +18,7 @@ def HtmlIntake(path):
 
 
 def loadWords():
-    f = open("profane_words.json", 'r')
+    f = open("../references/profane_words.json", 'r')
     bad_words = json.load(f)
     bad_words_pattern =' | '.join(bad_words)
     return bad_words_pattern, bad_words
@@ -31,26 +32,23 @@ def flagDFProces(df):
 
 def inituserOauth():
     oauth2_user_handler = tweepy.OAuth2UserHandler(
-        client_id=os.environ['CLIENT_ID'],
+        client_id=os.getenv('CLIENT_ID'),
         redirect_uri="http://127.0.0.1:5000/return",
         scope=["tweet.read", "tweet.write", "users.read"],
         # Client Secret is only necessary if using a confidential client
-        client_secret=os.environ['CLIENT_SECRET'])
+        client_secret=os.getenv('CLIENT_SECRET'))
 
     return oauth2_user_handler
 
 
 def initWebsite(returnPage):
-    app = Flask(__name__)
-
     oauth2_handler = inituserOauth()
     app.auth = oauth2_handler
 
-    @app.route("/", methods=['GET'])
-    def home():
+    @app.get("/")
+    async def home():
         authorization_url = app.auth.get_authorization_url()
-        print(authorization_url)
-        return render_template_string(index.replace('{user_auth_link}',authorization_url))
+        return templates.TemplateResponse('index.html')
 
     @app.route('/return')
     def results():
@@ -106,21 +104,17 @@ def initWebsite(returnPage):
 
         return render_template_string(tweetsDeletedPage.replace('{count}', str(len(values))))
 
-    app.run(debug=False)
-
 
 #  initialization
 bad_words_pattern, bad_words = loadWords()
-homePage = HtmlIntake("templates/homepage2.html")
-fetchTweetsPage = HtmlIntake("templates/Fetching_tweets.html")
-returnPage = HtmlIntake("templates/returnPage2.html")
-index = HtmlIntake("templates/index.html")
-tweetCountPage = HtmlIntake("templates/tweet_count.html")
-tweetsDeletedPage = HtmlIntake("templates/jinja/Tweets_deleted.html")
-over50Page = HtmlIntake("templates/jinja/over50Page.html")
+
+# load HTML
+templates = Jinja2Templates(directory='templates')
+homePage = HtmlIntake("../templates/legacy/homepage2.html")
+fetchTweetsPage = HtmlIntake("../templates/legacy/Fetching_tweets.html")
+returnPage = HtmlIntake("../templates/legacy/returnPage2.html")
+index = HtmlIntake("../templates/legacy/index.html")
+tweetCountPage = HtmlIntake("../templates/legacy/tweet_count.html")
+tweetsDeletedPage = HtmlIntake("../templates/jinja/Tweets_deleted.html")
+over50Page = HtmlIntake("../templates/jinja/over50Page.html")
 initWebsite(returnPage)
-
-
-
-
-
