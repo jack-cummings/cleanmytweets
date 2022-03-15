@@ -130,4 +130,5 @@ async def selectTweets(request: Request):
 
 if __name__ == '__main__':
     if os.environ['MODE'] == 'dev':
+        #test
         uvicorn.run(app, port=8000, host='0.0.0.0')
