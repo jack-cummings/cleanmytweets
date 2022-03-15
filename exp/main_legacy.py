@@ -18,7 +18,7 @@ def HtmlIntake(path):
 
 
 def loadWords():
-    f = open("../profane_words.json", 'r')
+    f = open("../references/profane_words.json", 'r')
     bad_words = json.load(f)
     return bad_words
 
