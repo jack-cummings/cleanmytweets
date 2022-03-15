@@ -16,7 +16,7 @@ def HtmlIntake(path):
     return ''.join(lines)
 
 def loadWords():
-    f = open("profane_words.json", 'r')
+    f = open("../profane_words.json", 'r')
     bad_words = json.load(f)
     return bad_words
 
@@ -102,9 +102,9 @@ def initWebsite(returnPage):
 #  initialization
 bad_words = loadWords()
 api = initTwitter()
-homePage = HtmlIntake("templates/homepage.html")
+homePage = HtmlIntake("../templates/legacy/homepage.html")
 # inputPage = HtmlIntake("../Scripts/html/templates/Input.html")
-fetchTweetsPage = HtmlIntake("templates/Fetching_tweets.html")
-returnPage = HtmlIntake("templates/returnPage.html")
+fetchTweetsPage = HtmlIntake("../templates/legacy/Fetching_tweets.html")
+returnPage = HtmlIntake("../templates/legacy/returnPage.html")
 initWebsite(returnPage)
 print("Initialization Complete http://127.0.0.1:5000/ ")

@@ -78,6 +78,7 @@ async def results(request: Request):
 
     return templates.TemplateResponse('tweet_count_j.html',{"request": request, "tweet_count": str(tweet_count)})
 
+
 @app.route("/scan_tweets")
 async def scan_tweets(request: Request):
     df = app.df

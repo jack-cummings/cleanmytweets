@@ -17,7 +17,7 @@ def HtmlIntake(path):
 
 
 def loadWords():
-    f = open("profane_words.json", 'r')
+    f = open("../profane_words.json", 'r')
     bad_words = json.load(f)
     bad_words_pattern =' | '.join(bad_words)
     return bad_words_pattern, bad_words
@@ -111,13 +111,13 @@ def initWebsite(returnPage):
 
 #  initialization
 bad_words_pattern, bad_words = loadWords()
-homePage = HtmlIntake("templates/homepage2.html")
-fetchTweetsPage = HtmlIntake("templates/Fetching_tweets.html")
-returnPage = HtmlIntake("templates/returnPage2.html")
-index = HtmlIntake("templates/index.html")
-tweetCountPage = HtmlIntake("templates/tweet_count.html")
-tweetsDeletedPage = HtmlIntake("templates/jinja/Tweets_deleted.html")
-over50Page = HtmlIntake("templates/jinja/over50Page.html")
+homePage = HtmlIntake("../templates/legacy/homepage2.html")
+fetchTweetsPage = HtmlIntake("../templates/legacy/Fetching_tweets.html")
+returnPage = HtmlIntake("../templates/legacy/returnPage2.html")
+index = HtmlIntake("../templates/legacy/index.html")
+tweetCountPage = HtmlIntake("../templates/legacy/tweet_count.html")
+tweetsDeletedPage = HtmlIntake("../templates/jinja/Tweets_deleted.html")
+over50Page = HtmlIntake("../templates/jinja/over50Page.html")
 initWebsite(returnPage)
 
 
