@@ -17,8 +17,11 @@ def HtmlIntake(path):
     return ''.join(lines)
 
 
-def loadWords():
-    f = open("references/profane_words.json", 'r')
+def loadWords(mode):
+    if mode == 'dev':
+        f = open("references/profane_words.json", 'r')
+    else:
+        f = open("profane_words.json", 'r')
     bad_words = json.load(f)
     bad_words_pattern = ' | '.join(bad_words)
     return bad_words_pattern, bad_words
@@ -53,10 +56,11 @@ def setBasePath(mode):
 
 
 #  initialization
-bad_words_pattern, bad_words = loadWords()
+mode = os.environ['MODE']
+bad_words_pattern, bad_words = loadWords(mode)
 
 app = FastAPI()
-basepath = setBasePath(os.environ['MODE'])
+basepath = setBasePath(mode)
 oauth2_handler = inituserOauth(basepath)
 app.auth = oauth2_handler
 templates = Jinja2Templates(directory='templates/jinja')
