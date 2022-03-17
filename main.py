@@ -5,9 +5,10 @@ import json
 import os
 import datetime
 import stripe
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.templating import Jinja2Templates
-from starlette.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 
 if os.environ['MODE'] == 'dev':
     import uvicorn
@@ -49,7 +50,7 @@ def inituserOauth(basepath):
 
 def setBasePath(mode):
     if mode.lower() == 'dev':
-        basepath = 'http://0.0.0.0:8000'
+        basepath = 'http://0.0.0.0:5050'
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     elif mode.lower() == 'prod':
         basepath = "https://www.cleanmytweets.com"
@@ -66,6 +67,8 @@ basepath = setBasePath(mode)
 oauth2_handler = inituserOauth(basepath)
 app.auth = oauth2_handler
 templates = Jinja2Templates(directory='templates/jinja')
+app.mount('/static', StaticFiles(directory='static'), name='static')
+stripe.api_key = 'sk_test_51KdgypCsKWtKuHp0d9jyiwQkvw0IEFdMtiAqjyYyHKsZlAAsktTCFAnWNfmfVqzvXhtFrH0saw3s2hDjwSzsbAVc00dPdysxhW'
 
 
 @app.get("/")
@@ -74,7 +77,7 @@ async def home(request: Request):
     return templates.TemplateResponse('index_j.html', {"request": request, "user_auth_link": authorization_url})
 
 
-@app.route('/return')
+@app.get('/return')
 async def results(request: Request):
     access_token = app.auth.fetch_token(str(request.url))
     client = tweepy.Client(access_token['access_token'])
@@ -89,46 +92,34 @@ async def results(request: Request):
     return templates.TemplateResponse('account_val.html', {"request": request, "user": username})
 
 
-# Fetch the Checkout Session to display the JSON result on the success page
-@app.get('/checkout-session', response_model=stripe.checkout.Session)
-def get_checkout_session(
-        sessionId: str
-):
-    id = sessionId
-    checkout_session = stripe.checkout.Session.retrieve(id)
-    return checkout_session
+@app.get("/success")
+async def success(request: Request):
+    return templates.TemplateResponse('success.html', {"request": request})
 
 
-@app.post('/create-checkout-session')
-def create_checkout_session():
-    domain_url = os.getenv('DOMAIN')
-    try:
-        # Create new Checkout Session for the order
-        # Other optional params include:
-
-        # For full details see https:#stripe.com/docs/api/checkout/sessions/create
-        # ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID set as a query param
-        checkout_session = stripe.checkout.Session.create(
-            success_url=domain_url + '/static/success.html?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=domain_url + '/static/canceled.html',
-            payment_method_types=(os.getenv('PAYMENT_METHOD_TYPES') or 'card').split(','),
-            mode='payment',
-            line_items=[{
-                'price': os.getenv('PRICE'),
-                'quantity': 1,
-            }]
-        )
-        return RedirectResponse(
-            checkout_session.url,
-            status.HTTP_303_SEE_OTHER
-        )
-    except Exception as e:
-        raise HTTPException(403, str(e))
-
-    return RedirectResponse(checkout_session.url, code=303)
+@app.get("/cancel")
+async def cancel(request: Request):
+    return templates.TemplateResponse('cancel.html', {"request": request})
 
 
-@app.route("/scan_tweets")
+
+@app.get('/create-checkout-session')
+async def create_checkout_session(request: Request):
+
+    checkout_session = stripe.checkout.Session.create(
+        success_url=basepath+"/success?session_id={CHECKOUT_SESSION_ID}",
+        cancel_url=basepath+"/cancel",
+        payment_method_types=["card"],
+        mode="payment",
+        line_items=[{
+            "price": "price_1KeQ1PCsKWtKuHp0PIYQ1AnH",
+            "quantity": 1
+        }],
+    )
+    return RedirectResponse(checkout_session.url, status_code=303)
+
+
+@app.get("/scan_tweets")
 async def scan_tweets(request: Request):
     # Get Tweets
     tweets_out = []
@@ -175,4 +166,4 @@ async def selectTweets(request: Request):
 
 if __name__ == '__main__':
     if os.environ['MODE'] == 'dev':
-        uvicorn.run(app, port=8000, host='0.0.0.0')
+        uvicorn.run(app, port=5050, host='0.0.0.0')
