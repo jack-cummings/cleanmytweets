@@ -107,7 +107,7 @@ async def cancel(request: Request):
 async def create_checkout_session(request: Request):
 
     checkout_session = stripe.checkout.Session.create(
-        success_url=basepath+"/success?session_id={CHECKOUT_SESSION_ID}",
+        success_url=basepath+"/scan_tweets?session_id={CHECKOUT_SESSION_ID}",
         cancel_url=basepath+"/cancel",
         payment_method_types=["card"],
         mode="payment",
