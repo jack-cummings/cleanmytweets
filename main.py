@@ -108,7 +108,7 @@ async def create_checkout_session(request: Request):
 
     checkout_session = stripe.checkout.Session.create(
         success_url=basepath+"/scan_tweets?session_id={CHECKOUT_SESSION_ID}",
-        cancel_url=basepath+"/cancel",
+        cancel_url=basepath,
         payment_method_types=["card"],
         mode="payment",
         line_items=[{
@@ -124,7 +124,7 @@ async def scan_tweets(request: Request):
     # Get Tweets
     tweets_out = []
     for tweet in tweepy.Paginator(app.client.get_users_tweets, id=app.user_id,
-                                  tweet_fields=['id', 'text', 'created_at'], max_results=100).flatten(limit=500):
+                                  tweet_fields=['id', 'text', 'created_at'], max_results=100).flatten(limit=3000):
         tweets_out.append([tweet.id, tweet.text, tweet.created_at])
 
     timeline_df = pd.DataFrame(tweets_out, columns=['Delete?', 'Text', 'date_full'])
@@ -137,8 +137,9 @@ async def scan_tweets(request: Request):
     check_box = r"""<input type="checkbox" id="\1" name="tweet_id" value="\1">
                             <label for="\1">  </label><br>"""
     out_table_html = str(re.sub(r'(\d{18,19})', check_box,
-                                prof_df.drop(['date_full', 'occurance'], 1).to_html(index=False).replace('<td>',
-                                                                                                         '<td align="center">')))
+                                prof_df.drop(['date_full', 'occurance'], 1).to_html(index=False).replace(
+                                    '<td>','<td align="center">').replace(
+                                    '<tr style="text-align: right;">', '<tr style="text-align: center;">')))
     p_count = prof_df.shape[0]
 
     return templates.TemplateResponse('returnPage_j.html', {"request": request,
