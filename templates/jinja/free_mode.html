@@ -5,17 +5,19 @@
     <title>Account Validated</title>
      <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <script src="https://js.stripe.com/v3/"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
 </head>
 <body>
     <div class="jumbotron">
-      <h1 class="display-4">{{ user }}'s Account Validated</h1>
-      <p class="lead">To review your tweet history, enter payment info with the button below.</p>
+      <h1 class="display-4">Looks like you're running in free mode</h1>
+      <p class="lead">Thanks so much for being an early tester.</p>
+        <p class="lead">This page will eventually be where you enter payment info, but since you don't have to do that...</p>
+        <p class="lead">Do us  favor and wait about a minute before you hit the button bellow.
+        In the meantime, try to guess how many profane tweets you think your account has.</p>
       <hr class="my-4">
 
-        <a class="btn btn-primary btn-lg" href= {{ return_path }} role="button"> Checkout</a>
+        <a class="btn btn-primary btn-lg" href= 'success' role="button"> Complete Simulated Checkout</a>
      <!-- <a class="btn btn-primary btn-lg" href="create-checkout-session" role="button"> Checkout</a> -->
     </div>
 </body>
