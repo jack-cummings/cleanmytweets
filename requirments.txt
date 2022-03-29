@@ -1,0 +1,5 @@
+fastapi==0.74.1
+pandas==1.4.1
+stripe==2.67.0
+tweepy==4.6.0
+
