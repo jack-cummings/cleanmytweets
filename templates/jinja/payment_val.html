@@ -2,19 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>correct</title>
+    <title>Payment Validated</title>
      <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://js.stripe.com/v3/"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Google Ads -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2675678183320337"
-     crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="jumbotron">
-      <h1 class="display-4">{{ count }} Tweets Deleted!</h1>
+      <h1 class="display-4">{{ user }}'s Payment Validated</h1>
+        <p class="lead">Click the button below to review your tweets</p>
       <hr class="my-4">
-      <a class="btn btn-primary btn-lg" href="\" role="button"> Back Home</a>
+
+      <a class="btn btn-primary btn-lg" href="scan_tweets" role="button"> Check My tweets</a>
     </div>
 </body>
 </html>

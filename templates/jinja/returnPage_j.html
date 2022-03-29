@@ -20,7 +20,7 @@
     <div class="jumbotron">
       <h1 class="display-4">{{ p_count }} Potentially Profane Tweets Found.</h1>
       <p class="lead">{{ total_count }} of {{ user }}'s Tweets Reviewed.  </p>
-        <p class="lead">Please select the tweets you'd like to delete  </p>
+        <p class="lead">Please select up to 50 tweets to delete </p>
       <hr class="my-4">
       <form method="POST" action="selectTweets">
           <p>{{ table | safe}}</p>
