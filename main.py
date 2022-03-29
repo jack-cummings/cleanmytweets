@@ -35,10 +35,11 @@ def HtmlIntake(path):
 
 
 def loadWords(mode):
-    if mode == 'dev':
-        f = open("references/profane_words.json", 'r')
-    else:
-        f = open("profane_words.json", 'r')
+    # if mode == 'dev':
+    #     f = open("references/profane_words.json", 'r')
+    # else:
+    #     f = open("profane_words.json", 'r')
+    f = open("references/profane_words.json", 'r')
     bad_words = json.load(f)
     bad_words_pattern = ' | '.join(bad_words)
     return bad_words_pattern, bad_words
