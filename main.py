@@ -107,25 +107,21 @@ async def home(request: Request):
 
 @app.get('/return')
 async def results(request: Request, background_tasks: BackgroundTasks):
-    try:
-        access_token = app.auth.fetch_token(str(request.url))
-        client = tweepy.Client(access_token['access_token'])
+    access_token = app.auth.fetch_token(str(request.url))
+    client = tweepy.Client(access_token['access_token'])
 
-        user = client.get_me(user_auth=False)
-        username = user.data.username
-        user_id = user.data.id
-        app.user_id = user_id
-        app.user = username
-        app.client = client
+    user = client.get_me(user_auth=False)
+    username = user.data.username
+    user_id = user.data.id
+    app.user_id = user_id
+    app.user = username
+    app.client = client
 
-        # Begin Timeline scrape
-        background_tasks.add_task(getTweets)
+    # Begin Timeline scrape
+    background_tasks.add_task(getTweets)
 
-        return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
-                                                               "return_path": return_path})
-    except:
-        return templates.TemplateResponse('error.html', {"request": request})
-
+    return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
+                                                           "return_path": return_path})
 
 @app.get("/success")
 async def success(request: Request):
