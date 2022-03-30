@@ -4,4 +4,4 @@ stripe==2.67.0
 tweepy==4.6.0
 uvicorn==0.17.5
 gunicorn==20.1.0
-
+jinja2==3.0.3
