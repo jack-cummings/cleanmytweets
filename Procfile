@@ -1,1 +1,1 @@
-web: gunicorn -w 4 -k uvicorn.workers.UvicornWorker cleanmytweets:main
+web: gunicorn -w 4 -k uvicorn.workers.UvicornWorker cleanmytweets:app
