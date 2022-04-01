@@ -86,16 +86,16 @@ def getTweets():
     app.df = out_df
 
 
-#  initialization
-mode = os.environ['MODE']
-bad_words_pattern, bad_words = loadWords(mode)
+if __name__ == '__main__':
+    #  initialization
+    mode = os.environ['MODE']
+    bad_words_pattern, bad_words = loadWords(mode)
 
-app = FastAPI()
-basepath = setBasePath(mode)
-oauth2_handler = inituserOauth(basepath)
-app.auth = oauth2_handler
-templates = Jinja2Templates(directory='templates/jinja')
-
+    app = FastAPI()
+    basepath = setBasePath(mode)
+    oauth2_handler = inituserOauth(basepath)
+    app.auth = oauth2_handler
+    templates = Jinja2Templates(directory='templates/jinja')
 
 @app.get("/")
 async def home(request: Request):
@@ -191,7 +191,5 @@ async def selectTweets(request: Request):
     except:
         return templates.TemplateResponse('error.html', {"request": request})
 
-
-if __name__ == '__main__':
-    if os.environ['MODE'] == 'dev':
-        uvicorn.run(app, port=5050, host='0.0.0.0')
+if os.environ['MODE'] == 'dev':
+    uvicorn.run(app, port=5050, host='0.0.0.0')
