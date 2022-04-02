@@ -68,7 +68,8 @@ def setBasePath(mode):
         basepath = 'http://0.0.0.0:5050'
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     elif mode.lower() == 'prod':
-        basepath = "https://www.cleanmytweets.com"
+        #basepath = "https://www.cleanmytweets.com"
+        basepath = 'www.cleanmytweets.com'
 
     return basepath
 
