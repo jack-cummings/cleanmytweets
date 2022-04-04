@@ -69,7 +69,7 @@ def setBasePath(mode):
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     elif mode.lower() == 'prod':
         #basepath = "https://www.cleanmytweets.com"
-        basepath = 'http://www.cleanmytweets.com'
+        basepath = 'https://clean-my-tweets-main.herokuapp.com/'
 
     return basepath
 
