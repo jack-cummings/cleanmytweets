@@ -157,10 +157,11 @@ async def scan_tweets(request: Request):
         check_box = r"""<input type="checkbox" id="\1" name="tweet_id" value="\1">
                                 <label for="\1">  </label><br>"""
         out_table_html = str(re.sub(r'(\d{18,19})', check_box,
-                                    prof_df.drop(['date_full', 'occurance'], 1).to_html(index=False).replace(
+                                    prof_df.drop(['date_full', 'occurance','Delete?'], 1).to_html(index=False).replace(
                                         '<td>', '<td align="center">').replace(
                                         '<tr style="text-align: right;">', '<tr style="text-align: center;">').replace(
                                         '<table border="1" class="dataframe">', '<table class="table">')))
+
         p_count = prof_df.shape[0]
 
         return templates.TemplateResponse('returnPage_j.html', {"request": request,
