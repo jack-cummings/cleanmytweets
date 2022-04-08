@@ -5,6 +5,7 @@ import json
 import os
 import datetime
 import stripe
+import time
 from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -107,8 +108,15 @@ async def home(request: Request):
 
 @app.get('/return')
 async def results(request: Request, background_tasks: BackgroundTasks):
-    access_token = app.auth.fetch_token(str(request.url))
-    client = tweepy.Client(access_token['access_token'])
+    client_flag = False
+    while not client_flag:
+        try:
+            access_token = app.auth.fetch_token(str(request.url))
+            client = tweepy.Client(access_token['access_token'])
+            client_flag = True
+        except:
+            time.sleep(5)
+            continue
 
     user = client.get_me(user_auth=False)
     username = user.data.username
@@ -118,6 +126,7 @@ async def results(request: Request, background_tasks: BackgroundTasks):
     app.client = client
 
     # Begin Timeline scrape
+    print(f'beginning scrape: {username}')
     background_tasks.add_task(getTweets)
 
     return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
