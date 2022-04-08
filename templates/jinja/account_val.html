@@ -10,14 +10,12 @@
 
 </head>
 <body>
-    <div class="jumbotron">
-      <h1 class="display-4">Account Validated</h1>
-      <p class="lead">To review @{{ user }}'s  tweet history, enter payment info with the button below.</p>
-      <hr class="my-4">
-
-        <a class="btn btn-primary btn-lg" href= {{ return_path }} role="button"> Checkout</a>
+    <div class="jumbotron bg-info">
+      <h1 class="text-white">Account Validated</h1>
+      <p class="text-white">To review @{{ user }}'s  tweet history, enter payment info with the button below.</p>
      <!-- <a class="btn btn-primary btn-lg" href="create-checkout-session" role="button"> Checkout</a> -->
     </div>
+    <a class="btn btn-primary btn-lg bg-info" href= {{ return_path }} role="button"> Checkout</a>
 </body>
 
 </html>

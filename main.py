@@ -164,6 +164,7 @@ async def scan_tweets(request: Request):
 
         p_count = prof_df.shape[0]
 
+
         return templates.TemplateResponse('returnPage_j.html', {"request": request,
                                                                 "p_count": str(p_count),
                                                                 'table': out_table_html,
