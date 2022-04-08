@@ -158,6 +158,8 @@ async def create_checkout_session(request: Request):
 
 @app.get("/scan_tweets")
 async def scan_tweets(request: Request):
+    if os.environ['PAY_MODE'] == 'free':
+        time.sleep(10)
     try:
         out_df = app.df
         total_count = out_df.shape[0]
