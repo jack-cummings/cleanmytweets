@@ -20,12 +20,13 @@
     <div class="jumbotron bg-info">
       <h1 class="text-white">{{ p_count }} Potentially Profane Tweets Found.</h1>
       <p class="text-white">{{ total_count }} of {{ user }}'s Tweets Reviewed.  </p>
+      <p class="text-white">Select up to 15 tweets to delete.</p>
   </div>
 
       <hr class="my-4">
       <form method="POST" action="selectTweets">
           <p>{{ table | safe}}</p>
-       <!--   <button type="submit" class="btn btn-primary">Delete Selected Tweets (can't be undone)</button> -->
+          <button type="submit" class="btn btn-primary">Delete Selected Tweets (can't be undone)</button>
       </form>
 
      <footer class="bg-light text-center text-lg-start">

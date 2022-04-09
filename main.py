@@ -108,15 +108,11 @@ async def home(request: Request):
 
 @app.get('/return')
 async def results(request: Request, background_tasks: BackgroundTasks):
-    client_flag = False
-    while not client_flag:
-        try:
-            access_token = app.auth.fetch_token(str(request.url))
-            client = tweepy.Client(access_token['access_token'])
-            client_flag = True
-        except:
-            time.sleep(5)
-            continue
+    try:
+        access_token = app.auth.fetch_token(str(request.url))
+        client = tweepy.Client(access_token['access_token'])
+    except:
+        return templates.TemplateResponse('auth_failed.html', {"request": request})
 
     user = client.get_me(user_auth=False)
     username = user.data.username
@@ -168,7 +164,7 @@ async def scan_tweets(request: Request):
         check_box = r"""<input type="checkbox" id="\1" name="tweet_id" value="\1">
                                 <label for="\1">  </label><br>"""
         out_table_html = str(re.sub(r'(\d{18,19})', check_box,
-                                    prof_df.drop(['date_full', 'occurance','Delete?'], 1).to_html(index=False).replace(
+                                    prof_df.drop(['date_full', 'occurance'], 1).to_html(index=False).replace(
                                         '<td>', '<td align="center">').replace(
                                         '<tr style="text-align: right;">', '<tr style="text-align: center;">').replace(
                                         '<table border="1" class="dataframe">', '<table class="table">')))
@@ -192,14 +188,21 @@ async def selectTweets(request: Request):
         values = body.decode("utf-8").replace('tweet_id=', '').split(',')
         if values == [""]:
             pass
-        elif len(values) < 50:
+        elif len(values) < 17:
+            delete_failed_flag = False
             for v in values:
-                app.client.delete_tweet(v, user_auth=False)
-        else:
-            return templates.TemplateResponse('over50Page.html', {'request': request})
+                try:
+                    app.client.delete_tweet(v, user_auth=False)
+                except:
+                    delete_failed_flag = True
+            if delete_failed_flag:
+                return templates.TemplateResponse('delete_failed.html', {'request': request})
+            else:
+                return templates.TemplateResponse('Tweets_deleted.html', {'request': request,
+                                                                          'count': str(len(values))})
+        elif len(values) >= 17:
+            return templates.TemplateResponse('over_15.html', {'request': request})
 
-        return templates.TemplateResponse('Tweets_deleted.html', {'request': request,
-                                                                  'count': str(len(values))})
     except:
         return templates.TemplateResponse('error.html', {"request": request})
 
