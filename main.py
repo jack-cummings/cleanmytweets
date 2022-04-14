@@ -18,8 +18,6 @@ if os.environ['MODE'] == 'dev':
     stripe.api_key = os.environ['STRIPE_KEY_DEV']
     price = "price_1KeQ1PCsKWtKuHp0PIYQ1AnH"
 else:
-    # stripe.api_key = os.environ['STRIPE_KEY_PROD']
-    # price = 'price_1KdhRoCsKWtKuHp0EfcqdUG8'
     stripe.api_key = os.environ['STRIPE_KEY_DEV']
     price = "price_1KeQ1PCsKWtKuHp0PIYQ1AnH"
 
@@ -36,10 +34,6 @@ def HtmlIntake(path):
 
 
 def loadWords(mode):
-    # if mode == 'dev':
-    #     f = open("references/profane_words.json", 'r')
-    # else:
-    #     f = open("profane_words.json", 'r')
     f = open("references/profane_words.json", 'r')
     bad_words = json.load(f)
     bad_words_pattern = ' | '.join(bad_words)
@@ -154,8 +148,7 @@ async def create_checkout_session(request: Request):
 
 @app.get("/scan_tweets")
 async def scan_tweets(request: Request):
-    if os.environ['PAY_MODE'] == 'free':
-        time.sleep(10)
+
     try:
         out_df = app.df
         total_count = out_df.shape[0]
