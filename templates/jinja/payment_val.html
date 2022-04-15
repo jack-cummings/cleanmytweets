@@ -10,13 +10,13 @@
         function showStuff() {
             document.getElementById("advance_button").style.visibility="visible";
         }
-            setTimeout("showStuff()",3000);
+            setTimeout("showStuff()",45000);
 
         function hideStuff() {
             document.getElementById("fake_button_1").style.visibility="hidden"
             document.getElementById("fake_button_2").style.visibility="hidden";
         }
-            setTimeout("hideStuff()",3000);
+            setTimeout("hideStuff()",45000);
     </script>
 </head>
 <body>
@@ -24,10 +24,11 @@
     <div class="jumbotron bg-info">
       <h1 class="text-white">Payment Validated</h1>
         <p class="text-white">Compiling your tweet report now, when it's finished, a button will appear below this message.</p>
-        <p class="text-white">This should take about 30 seconds.</p>
+        <p class="text-white">This should take about one minute.</p>
     </div>
       <button class="btn btn-primary btn-lg bg-info" id="fake_button_1" type="button" disabled><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="fake_button_2"></span>Loading...</button>
       <a class="btn btn-primary btn-lg bg-info" href="scan_tweets" role="button" id="advance_button" style="visibility:hidden;"> Check My tweets</a>
+</div>
 </div>
 </body>
 </html>
