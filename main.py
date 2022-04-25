@@ -6,10 +6,11 @@ import os
 import datetime
 import stripe
 import time
-from fastapi import FastAPI, Request, BackgroundTasks
+from fastapi import FastAPI, Request, BackgroundTasks, Response, Cookie
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
+
 
 ## Configs
 if os.environ['MODE'] == 'dev':
@@ -69,17 +70,38 @@ def setBasePath(mode):
     return basepath
 
 
-def getTweets():
-    # Get Tweets
+def getTweets(user_id, response, client):
+    # Collect user timeline
+    twitter_client = client
     tweets_out = []
-    for tweet in tweepy.Paginator(app.client.get_users_tweets, id=app.user_id,
+    for tweet in tweepy.Paginator(twitter_client.get_users_tweets, id=user_id,
                                   tweet_fields=['id', 'text', 'created_at'], max_results=100).flatten(limit=3000):
         tweets_out.append([tweet.id, tweet.text, tweet.created_at])
 
     timeline_df = pd.DataFrame(tweets_out, columns=['Delete?', 'Text', 'date_full'])
 
+    # Run scan for flag words
     out_df = flagDFProces(timeline_df)
-    app.df = out_df
+
+    total_count = out_df.shape[0]
+    prof_df = out_df[out_df['occurance'] == 1]
+    prof_df['Text'] = prof_df['Text'].apply(lambda x: x.encode('utf-8', 'ignore'))
+
+    check_box = r"""<input type="checkbox" id="\1" name="tweet_id" value="\1">
+                            <label for="\1">  </label><br>"""
+    out_table_html = str(re.sub(r'(\d{18,19})', check_box,
+                                prof_df.drop(['date_full', 'occurance'], 1).to_html(index=False).replace(
+                                    '<td>', '<td align="center">').replace(
+                                    '<tr style="text-align: right;">', '<tr style="text-align: center;">').replace(
+                                    '<table border="1" class="dataframe">', '<table class="table">')))
+
+    p_count = prof_df.shape[0]
+
+    # Set output cookies
+    response.set_cookie(key="total_count", value=total_count)
+    response.set_cookie(key="table", value=out_table_html)
+    response.set_cookie(key="p_count", value=p_count)
+
 
 #  initialization
 mode = os.environ['MODE']
@@ -101,7 +123,7 @@ async def home(request: Request):
 
 
 @app.get('/return')
-async def results(request: Request, background_tasks: BackgroundTasks):
+async def results(request: Request, background_tasks: BackgroundTasks, response: Response):
     try:
         access_token = app.auth.fetch_token(str(request.url))
         client = tweepy.Client(access_token['access_token'])
@@ -111,20 +133,23 @@ async def results(request: Request, background_tasks: BackgroundTasks):
     user = client.get_me(user_auth=False)
     username = user.data.username
     user_id = user.data.id
-    app.user_id = user_id
-    app.user = username
-    app.client = client
+    # app.user_id = user_id
+    # app.user = username
+    # app.client = client
+    response.set_cookie(key="user_id", value=user_id)
+    response.set_cookie(key="user", value=username)
+    #response.set_cookie(key="client", value=client)
 
     # Begin Timeline scrape
     print(f'beginning scrape: {username}')
-    background_tasks.add_task(getTweets)
+    background_tasks.add_task(getTweets, user_id=user_id, response=response, client=client)
 
     return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
                                                            "return_path": return_path})
 
 @app.get("/success")
 async def success(request: Request):
-    return templates.TemplateResponse('payment_val.html', {"request": request, "user": app.user})
+    return templates.TemplateResponse('payment_val.html', {"request": request, "user": Cookie('user')})
 
 @app.get("/free_mode")
 async def success(request: Request):
@@ -148,28 +173,15 @@ async def create_checkout_session(request: Request):
 
 @app.get("/scan_tweets")
 async def scan_tweets(request: Request):
-
+    p_count = Cookie('p_count')
+    table = Cookie('table')
+    total_count = Cookie('total_count')
     try:
-        out_df = app.df
-        total_count = out_df.shape[0]
-        prof_df = out_df[out_df['occurance'] == 1]
-
-        check_box = r"""<input type="checkbox" id="\1" name="tweet_id" value="\1">
-                                <label for="\1">  </label><br>"""
-        out_table_html = str(re.sub(r'(\d{18,19})', check_box,
-                                    prof_df.drop(['date_full', 'occurance'], 1).to_html(index=False).replace(
-                                        '<td>', '<td align="center">').replace(
-                                        '<tr style="text-align: right;">', '<tr style="text-align: center;">').replace(
-                                        '<table border="1" class="dataframe">', '<table class="table">')))
-
-        p_count = prof_df.shape[0]
-
-
         return templates.TemplateResponse('returnPage_j.html', {"request": request,
                                                                 "p_count": str(p_count),
-                                                                'table': out_table_html,
+                                                                'table': table,
                                                                 'total_count': str(total_count),
-                                                                'user': app.user})
+                                                                'user': Cookie('user')})
     except:
         return templates.TemplateResponse('error.html', {"request": request})
 
@@ -185,7 +197,8 @@ async def selectTweets(request: Request):
             delete_failed_flag = False
             for v in values:
                 try:
-                    app.client.delete_tweet(v, user_auth=False)
+                    twitter_client = Cookie('client')
+                    twitter_client.delete_tweet(v, user_auth=False)
                 except:
                     delete_failed_flag = True
             if delete_failed_flag:
