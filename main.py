@@ -10,6 +10,7 @@ from fastapi import FastAPI, Request, BackgroundTasks, Response, Cookie
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
+from typing import Optional
 
 
 ## Configs
@@ -114,10 +115,12 @@ app.auth = oauth2_handler
 templates = Jinja2Templates(directory='templates/jinja')
 
 @app.get("/")
-async def home(request: Request):
+async def home(request: Request, response: Response):
     try:
         authorization_url = app.auth.get_authorization_url()
-        return templates.TemplateResponse('index_j.html', {"request": request, "user_auth_link": authorization_url})
+        response.set_cookie(key="user", value='user2')
+        return templates.TemplateResponse('index_j.html', {"request": request,"user_auth_link": authorization_url})
+
     except:
         return templates.TemplateResponse('error.html', {"request": request})
 
@@ -154,6 +157,10 @@ async def success(request: Request):
 @app.get("/free_mode")
 async def success(request: Request):
     return templates.TemplateResponse('free_mode.html', {"request": request})
+
+@app.get("/learn_more")
+async def read(request: Request, response: Response, user: Optional[str] = Cookie(None)):
+    return templates.TemplateResponse('learn_more.html', {"request": request, "user": user})
 
 
 @app.get('/create-checkout-session')
