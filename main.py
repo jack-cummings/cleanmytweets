@@ -101,7 +101,7 @@ def getTweets(user_id, client, username):
 mode = os.environ['MODE']
 bad_words_pattern, bad_words = loadWords(mode)
 # init DB
-db_engine = create_engine(os.environ['DB_URL'], echo=False)
+db_engine = create_engine(os.environ['DATABASE_URL'], echo=False)
 
 app = FastAPI()
 basepath = setBasePath(mode)
@@ -197,10 +197,15 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
                                                             'total_count': str(df['total_count'].values[0]),
                                                             'user': username})
     try:
+        tc = str(df['total_count'].values[0])
+    except:
+        tc = str(0)
+
+    try:
         return templates.TemplateResponse('returnPage_j.html', {"request": request,
                                                                 "p_count": str(df.shape[0]),
                                                                 'table': out_table_html,
-                                                                'total_count': str(df['total_count'].values[0]),
+                                                                'total_count': tc,
                                                                 'user': Cookie('user')})
     except:
         return templates.TemplateResponse('error.html', {"request": request})
