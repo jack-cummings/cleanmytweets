@@ -11,6 +11,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from typing import Optional
+from sqlalchemy import create_engine
 
 
 ## Configs
@@ -52,7 +53,7 @@ def flagDFProces(df):
 def inituserOauth(basepath):
     oauth2_user_handler = tweepy.OAuth2UserHandler(
         client_id=os.getenv('CLIENT_ID'),
-        redirect_uri=f'{basepath}/return',
+        redirect_uri=f'{basepath}/return-get',
         scope=["tweet.read", "tweet.write", "users.read"],
         # Client Secret is only necessary if using a confidential client
         client_secret=os.getenv('CLIENT_SECRET'))
@@ -71,7 +72,7 @@ def setBasePath(mode):
     return basepath
 
 
-def getTweets(user_id, response, client):
+def getTweets(user_id, client, username):
     # Collect user timeline
     twitter_client = client
     tweets_out = []
@@ -88,25 +89,19 @@ def getTweets(user_id, response, client):
     prof_df = out_df[out_df['occurance'] == 1]
     prof_df['Text'] = prof_df['Text'].apply(lambda x: x.encode('utf-8', 'ignore'))
 
-    check_box = r"""<input type="checkbox" id="\1" name="tweet_id" value="\1">
-                            <label for="\1">  </label><br>"""
-    out_table_html = str(re.sub(r'(\d{18,19})', check_box,
-                                prof_df.drop(['date_full', 'occurance'], 1).to_html(index=False).replace(
-                                    '<td>', '<td align="center">').replace(
-                                    '<tr style="text-align: right;">', '<tr style="text-align: center;">').replace(
-                                    '<table border="1" class="dataframe">', '<table class="table">')))
+    prof_df['user'] = username
+    prof_df['total_count'] = total_count
+    # write to sql
+    prof_df.to_sql('tweets', con=db_engine, if_exists='append')
 
-    p_count = prof_df.shape[0]
-
-    # Set output cookies
-    response.set_cookie(key="total_count", value=total_count)
-    response.set_cookie(key="table", value=out_table_html)
-    response.set_cookie(key="p_count", value=p_count)
+    print('Processing Complete')
 
 
 #  initialization
 mode = os.environ['MODE']
 bad_words_pattern, bad_words = loadWords(mode)
+# init DB
+db_engine = create_engine(os.environ['DB_URL'], echo=False)
 
 app = FastAPI()
 basepath = setBasePath(mode)
@@ -115,18 +110,17 @@ app.auth = oauth2_handler
 templates = Jinja2Templates(directory='templates/jinja')
 
 @app.get("/")
-async def home(request: Request, response: Response):
+async def home(request: Request):
     try:
         authorization_url = app.auth.get_authorization_url()
-        response.set_cookie(key="user", value='user2')
         return templates.TemplateResponse('index_j.html', {"request": request,"user_auth_link": authorization_url})
 
     except:
         return templates.TemplateResponse('error.html', {"request": request})
 
 
-@app.get('/return')
-async def results(request: Request, background_tasks: BackgroundTasks, response: Response):
+@app.get('/return-get', response_class=RedirectResponse)
+async def results(request: Request, background_tasks: BackgroundTasks):
     try:
         access_token = app.auth.fetch_token(str(request.url))
         client = tweepy.Client(access_token['access_token'])
@@ -136,17 +130,19 @@ async def results(request: Request, background_tasks: BackgroundTasks, response:
     user = client.get_me(user_auth=False)
     username = user.data.username
     user_id = user.data.id
-    # app.user_id = user_id
-    # app.user = username
-    # app.client = client
-    response.set_cookie(key="user_id", value=user_id)
-    response.set_cookie(key="user", value=username)
+    #response.set_cookie(key="user_id", value=user_id)
+    response = RedirectResponse(url="/return-get_2")
+    response.set_cookie("username", str(username))
     #response.set_cookie(key="client", value=client)
 
     # Begin Timeline scrape
     print(f'beginning scrape: {username}')
-    background_tasks.add_task(getTweets, user_id=user_id, response=response, client=client)
+    background_tasks.add_task(getTweets, user_id=user_id, client=client, username=username)
 
+    return response
+
+@app.get('/return-get_2')
+async def results(request: Request, username: Optional[str] = Cookie(None)):
     return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
                                                            "return_path": return_path})
 
@@ -159,8 +155,8 @@ async def success(request: Request):
     return templates.TemplateResponse('free_mode.html', {"request": request})
 
 @app.get("/learn_more")
-async def read(request: Request, response: Response, user: Optional[str] = Cookie(None)):
-    return templates.TemplateResponse('learn_more.html', {"request": request, "user": user})
+async def read(request: Request, response: Response,):
+    return templates.TemplateResponse('learn_more.html', {"request": request})
 
 
 @app.get('/create-checkout-session')
@@ -179,15 +175,23 @@ async def create_checkout_session(request: Request):
 
 
 @app.get("/scan_tweets")
-async def scan_tweets(request: Request):
-    p_count = Cookie('p_count')
-    table = Cookie('table')
-    total_count = Cookie('total_count')
+async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
+    df = db_engine.execute(f"""
+            SELECT * 
+            FROM tweets
+            WHERE user = {username}""")
+    check_box = r"""<input type="checkbox" id="\1" name="tweet_id" value="\1">
+                            <label for="\1">  </label><br>"""
+    out_table_html = str(re.sub(r'(\d{18,19})', check_box,
+                                df.drop(['date_full', 'occurance'], 1).to_html(index=False).replace(
+                                    '<td>', '<td align="center">').replace(
+                                    '<tr style="text-align: right;">', '<tr style="text-align: center;">').replace(
+                                    '<table border="1" class="dataframe">', '<table class="table">')))
     try:
         return templates.TemplateResponse('returnPage_j.html', {"request": request,
-                                                                "p_count": str(p_count),
-                                                                'table': table,
-                                                                'total_count': str(total_count),
+                                                                "p_count": str(df.shape[0]),
+                                                                'table': out_table_html,
+                                                                'total_count': str(df['total_count'].values[0]),
                                                                 'user': Cookie('user')})
     except:
         return templates.TemplateResponse('error.html', {"request": request})
