@@ -133,7 +133,7 @@ async def results(request: Request, background_tasks: BackgroundTasks):
     #response.set_cookie(key="user_id", value=user_id)
     response = RedirectResponse(url="/return-get_2")
     response.set_cookie("username", str(username))
-    #response.set_cookie(key="client", value=client)
+    response.set_cookie(key="access_token", value=access_token['access_token'])
 
     # Begin Timeline scrape
     print(f'beginning scrape: {username}')
@@ -207,8 +207,9 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
 
 
 @app.post('/selectTweets')
-async def selectTweets(request: Request):
+async def selectTweets(request: Request, access_token: Optional[str] = Cookie(None)):
     try:
+        client = tweepy.Client(access_token)
         body = await request.body()
         values = body.decode("utf-8").replace('tweet_id=', '').split(',')
         if values == [""]:
@@ -217,7 +218,7 @@ async def selectTweets(request: Request):
             delete_failed_flag = False
             for v in values:
                 try:
-                    twitter_client = Cookie('client')
+                    twitter_client = client
                     twitter_client.delete_tweet(v, user_auth=False)
                 except:
                     delete_failed_flag = True
