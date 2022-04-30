@@ -89,10 +89,10 @@ def getTweets(user_id, client, username):
     prof_df = out_df[out_df['occurance'] == 1]
     prof_df['Text'] = prof_df['Text'].apply(lambda x: x.encode('utf-8', 'ignore'))
 
-    prof_df['user'] = username
+    prof_df['username'] = username
     prof_df['total_count'] = total_count
     # write to sql
-    prof_df.to_sql('tweets', con=db_engine, if_exists='append')
+    prof_df.to_sql('tweets', con=db_engine, if_exists='replace')#'append')
 
     print('Processing Complete')
 
@@ -176,17 +176,26 @@ async def create_checkout_session(request: Request):
 
 @app.get("/scan_tweets")
 async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
-    df = db_engine.execute(f"""
+    query = (f"""
             SELECT * 
             FROM tweets
-            WHERE user = {username}""")
+            WHERE username = '{username}'""")
+
+    df = pd.read_sql_query(query, db_engine)
+    df['Text'] = df['Text'].apply(lambda x: bytes.fromhex(x[2:]).decode('utf-8'))
     check_box = r"""<input type="checkbox" id="\1" name="tweet_id" value="\1">
                             <label for="\1">  </label><br>"""
     out_table_html = str(re.sub(r'(\d{18,19})', check_box,
-                                df.drop(['date_full', 'occurance'], 1).to_html(index=False).replace(
+                                df.drop(['date_full', 'occurance','username','total_count','index'], 1).to_html(index=False).replace(
                                     '<td>', '<td align="center">').replace(
                                     '<tr style="text-align: right;">', '<tr style="text-align: center;">').replace(
                                     '<table border="1" class="dataframe">', '<table class="table">')))
+
+    return templates.TemplateResponse('returnPage_j.html', {"request": request,
+                                                            "p_count": str(df.shape[0]),
+                                                            'table': out_table_html,
+                                                            'total_count': str(df['total_count'].values[0]),
+                                                            'user': username})
     try:
         return templates.TemplateResponse('returnPage_j.html', {"request": request,
                                                                 "p_count": str(df.shape[0]),
