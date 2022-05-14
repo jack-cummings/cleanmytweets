@@ -91,8 +91,15 @@ def getTweets(user_id, client, username):
 
     prof_df['username'] = username
     prof_df['total_count'] = total_count
+
+    # Check length of prof_df
+    if len(prof_df) == 0:
+        prof_df.loc[1] = [0, "Great work, we've found no controversial tweets in your timeline!",
+                        datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S+00:00'), ' ', 1,
+                        datetime.datetime.now().strftime('%Y-%m-%d'), username, 0]
+
     # write to sql
-    prof_df.to_sql('tweets', con=db_engine, if_exists='replace')#'append')
+    prof_df.to_sql('tweets', con=db_engine, if_exists='append')#'replace'
 
     print('Processing Complete')
 
@@ -101,7 +108,7 @@ def getTweets(user_id, client, username):
 mode = os.environ['MODE']
 bad_words_pattern, bad_words = loadWords(mode)
 # init DB
-db_engine = create_engine(os.environ['DATABASE_URL'], echo=False)
+db_engine = create_engine(os.environ['DB_URL'], echo=False)
 
 app = FastAPI()
 basepath = setBasePath(mode)
@@ -176,13 +183,21 @@ async def create_checkout_session(request: Request):
 
 @app.get("/scan_tweets")
 async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
+    # pull rows
     query = (f"""
             SELECT * 
             FROM tweets
             WHERE username = '{username}'""")
 
     df = pd.read_sql_query(query, db_engine)
-    df['Text'] = df['Text'].apply(lambda x: bytes.fromhex(x[2:]).decode('utf-8'))
+
+    # delete from DB
+    db_engine.execute(f"DELETE FROM tweets WHERE username = '{username}'")
+
+    try:
+        df['Text'] = df['Text'].apply(lambda x: bytes.fromhex(x[2:]).decode('utf-8'))
+    except ValueError:
+        pass
     check_box = r"""<input type="checkbox" id="\1" name="tweet_id" value="\1">
                             <label for="\1">  </label><br>"""
     out_table_html = str(re.sub(r'(\d{18,19})', check_box,
