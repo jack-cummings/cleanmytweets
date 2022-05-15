@@ -66,8 +66,8 @@ def setBasePath(mode):
         basepath = 'http://0.0.0.0:5050'
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     elif mode.lower() == 'prod':
-        #basepath = "https://www.cleanmytweets.com"
-        basepath = 'https://cleanmytweets.herokuapp.com'
+        basepath = "https://www.cleanmytweets.com"
+        #basepath = 'https://cleanmytweets.herokuapp.com'
 
     return basepath
 
@@ -98,8 +98,13 @@ def getTweets(user_id, client, username):
                         datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S+00:00'), ' ', 1,
                         datetime.datetime.now().strftime('%Y-%m-%d'), username, 0]
 
+    user_df = pd.DataFrame([[username,datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S+00:00')]],
+                          columns=['Name', 'Insert_DT'])
+
     # write to sql
     prof_df.to_sql('tweets', con=db_engine, if_exists='append')#'replace'
+    user_df.to_sql('users', con=db_engine, if_exists='append')
+
 
     print('Processing Complete')
 
