@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Account Validated</title>
+    <title>Failed to Authenticate</title>
      <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <script src="https://js.stripe.com/v3/"></script>
@@ -10,13 +10,14 @@
 
 </head>
 <body>
-<div class="container my-4">
+ <div class="container my-4">
     <div class="jumbotron bg-info">
-      <h1 class="text-white">Account Validated</h1>
-      <p class="text-white">To review @{{ user }}'s  tweet history, enter payment info with the button below.</p>
-     <!-- <a class="btn btn-primary btn-lg" href="create-checkout-session" role="button"> Checkout</a> -->
+      <h1 class="text-white">Account Validation Failed</h1>
+      <p class="text-white">This happens frequently and can normally be fixed if you just try again.</p>
+
     </div>
-    <a class="btn btn-primary btn-lg bg-info" href= {{ return_path }} role="button"> Checkout</a>
+    <a class="btn btn-primary btn-lg bg-info" href= '/' role="button"> Try Again</a>
+
 </div>
 </body>
 
