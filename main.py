@@ -18,16 +18,17 @@ from sqlalchemy import create_engine
 if os.environ['MODE'] == 'dev':
     import uvicorn
 
-    stripe.api_key = os.environ['STRIPE_KEY_DEV']
-    price = "price_1KeQ1PCsKWtKuHp0PIYQ1AnH"
+if os.environ['STRIPE_MODE'] == 'prod':
+    stripe.api_key = os.environ['STRIPE_KEY_PROD']
+    price = "price_1L0We3CsKWtKuHp02UYDbhBF"
 else:
     stripe.api_key = os.environ['STRIPE_KEY_DEV']
     price = "price_1KeQ1PCsKWtKuHp0PIYQ1AnH"
 
-if os.environ['PAY_MODE'] == 'pay':
-    return_path = "create-checkout-session"
-else:
-    return_path = 'free_mode'
+# if os.environ['PAY_MODE'] == 'pay':
+#     return_path = "create-checkout-session"
+# else:
+#     return_path = 'free_mode'
 
 
 def HtmlIntake(path):
@@ -156,8 +157,7 @@ async def results(request: Request, background_tasks: BackgroundTasks):
 
 @app.get('/return-get_2')
 async def results(request: Request, username: Optional[str] = Cookie(None)):
-    return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
-                                                           "return_path": return_path})
+    return templates.TemplateResponse('account_val.html', {"request": request, "user": username})
 
 @app.post("/promoInput")
 async def userInput(request: Request, username: Optional[str] = Cookie(None)):
