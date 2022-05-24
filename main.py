@@ -63,7 +63,7 @@ def inituserOauth(basepath):
 
 def setBasePath(mode):
     if mode.lower() == 'dev':
-        basepath = 'http://0.0.0.0:5050'
+        basepath = 'http://0.0.0.0:4242'
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     elif mode.lower() == 'prod':
         basepath = "https://www.cleanmytweets.com"
@@ -86,7 +86,7 @@ def getTweets(user_id, client, username):
     out_df = flagDFProces(timeline_df)
 
     total_count = out_df.shape[0]
-    prof_df = out_df[out_df['occurance'] == 1]
+    prof_df = pd.DataFrame(out_df[out_df['occurance'] == 1])
     prof_df['Text'] = prof_df['Text'].apply(lambda x: x.encode('utf-8', 'ignore'))
 
     prof_df['username'] = username
@@ -136,7 +136,8 @@ async def results(request: Request, background_tasks: BackgroundTasks):
     try:
         access_token = app.auth.fetch_token(str(request.url))
         client = tweepy.Client(access_token['access_token'])
-    except:
+    except Exception as e:
+        print(e)
         return templates.TemplateResponse('auth_failed.html', {"request": request})
 
     user = client.get_me(user_auth=False)
@@ -157,6 +158,22 @@ async def results(request: Request, background_tasks: BackgroundTasks):
 async def results(request: Request, username: Optional[str] = Cookie(None)):
     return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
                                                            "return_path": return_path})
+
+@app.post("/promoInput")
+async def userInput(request: Request, username: Optional[str] = Cookie(None)):
+    try:
+        body = await request.body()
+        inputPC = body.decode('UTF-8').split('=')[1].strip()
+        approvedPCs = os.environ['PROMO_CODES'].split(',')
+        if inputPC in approvedPCs:
+            return templates.TemplateResponse('payment_val.html', {"request": request, "user": Cookie('user')})
+        else:
+            return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
+                                                                   "return_path": return_path})
+    except Exception as e:
+        print(e)
+        return templates.TemplateResponse('error.html', {"request": request})
+
 
 @app.get("/success")
 async def success(request: Request):
@@ -206,7 +223,7 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
     check_box = r"""<input type="checkbox" id="\1" name="tweet_id" value="\1">
                             <label for="\1">  </label><br>"""
     out_table_html = str(re.sub(r'(\d{18,19})', check_box,
-                                df.drop(['date_full', 'occurance','username','total_count','index'], 1).to_html(index=False).replace(
+                                df.drop(columns = ['date_full', 'occurance','username','total_count','index'], axis=1).to_html(index=False).replace(
                                     '<td>', '<td align="center">').replace(
                                     '<tr style="text-align: right;">', '<tr style="text-align: center;">').replace(
                                     '<table border="1" class="dataframe">', '<table class="table">')))
@@ -260,4 +277,4 @@ async def selectTweets(request: Request, access_token: Optional[str] = Cookie(No
 
 if __name__ == '__main__':
     if os.environ['MODE'] == 'dev':
-        uvicorn.run(app, port=5050, host='0.0.0.0')
+        uvicorn.run(app, port=4242, host='0.0.0.0')

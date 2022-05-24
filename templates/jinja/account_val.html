@@ -13,11 +13,22 @@
 <div class="container my-4">
     <div class="jumbotron bg-info">
       <h1 class="text-white">Account Validated</h1>
-      <p class="text-white">To review @{{ user }}'s  tweet history, enter payment info with the button below.</p>
+      <p class="text-white">To review @{{ user }}'s  tweet history, select a checkout option</p>
      <!-- <a class="btn btn-primary btn-lg" href="create-checkout-session" role="button"> Checkout</a> -->
+        <form method="POST" action="promoInput">
+            <div class="form-group" role="group" >
+                <label for="promocode"> </label>
+                <input type="text" class="form-control" id="promocode" placeholder="Enter Promocode Here" name=promocode_user>
+            </div>
     </div>
-    <a class="btn btn-primary btn-lg bg-info" href= {{ return_path }} role="button"> Checkout</a>
-</div>
+            <button type="submit" class="btn btn-primary btn-lg bg-info">Checkout with Promo</button>
+            <a class="btn btn-primary btn-lg bg-info" href= {{ return_path }} role="button"> Checkout with Card</a>
+        </form>
+
+    </div>
+
+
+
 </body>
 
 </html>
