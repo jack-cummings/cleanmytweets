@@ -13,7 +13,6 @@ from fastapi.responses import RedirectResponse
 from typing import Optional
 from sqlalchemy import create_engine
 
-
 ## Configs
 if os.environ['MODE'] == 'dev':
     import uvicorn
@@ -24,6 +23,7 @@ if os.environ['STRIPE_MODE'] == 'prod':
 else:
     stripe.api_key = os.environ['STRIPE_KEY_DEV']
     price = "price_1KeQ1PCsKWtKuHp0PIYQ1AnH"
+
 
 # if os.environ['PAY_MODE'] == 'pay':
 #     return_path = "create-checkout-session"
@@ -68,7 +68,7 @@ def setBasePath(mode):
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     elif mode.lower() == 'prod':
         basepath = "https://www.cleanmytweets.com"
-        #basepath = 'https://cleanmytweets.herokuapp.com'
+        # basepath = 'https://cleanmytweets.herokuapp.com'
 
     return basepath
 
@@ -96,16 +96,15 @@ def getTweets(user_id, client, username):
     # Check length of prof_df
     if len(prof_df) == 0:
         prof_df.loc[1] = [0, "Great work, we've found no controversial tweets in your timeline!",
-                        datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S+00:00'), ' ', 1,
-                        datetime.datetime.now().strftime('%Y-%m-%d'), username, 0]
+                          datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S+00:00'), ' ', 1,
+                          datetime.datetime.now().strftime('%Y-%m-%d'), username, 0]
 
-    user_df = pd.DataFrame([[username,datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S+00:00')]],
-                          columns=['Name', 'Insert_DT'])
+    user_df = pd.DataFrame([[username, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S+00:00')]],
+                           columns=['Name', 'Insert_DT'])
 
     # write to sql
-    prof_df.to_sql('tweets', con=db_engine, if_exists='append')#'replace'
+    prof_df.to_sql('tweets', con=db_engine, if_exists='append')  # 'replace'
     user_df.to_sql('users', con=db_engine, if_exists='append')
-
 
     print('Processing Complete')
 
@@ -122,11 +121,12 @@ oauth2_handler = inituserOauth(basepath)
 app.auth = oauth2_handler
 templates = Jinja2Templates(directory='templates/jinja')
 
+
 @app.get("/")
 async def home(request: Request):
     try:
         authorization_url = app.auth.get_authorization_url()
-        return templates.TemplateResponse('index_j.html', {"request": request,"user_auth_link": authorization_url})
+        return templates.TemplateResponse('index_j.html', {"request": request, "user_auth_link": authorization_url})
 
     except:
         return templates.TemplateResponse('error.html', {"request": request})
@@ -139,12 +139,13 @@ async def results(request: Request, background_tasks: BackgroundTasks):
         client = tweepy.Client(access_token['access_token'])
     except Exception as e:
         print(e)
+        print(request.url)
         return templates.TemplateResponse('auth_failed.html', {"request": request})
 
     user = client.get_me(user_auth=False)
     username = user.data.username
     user_id = user.data.id
-    #response.set_cookie(key="user_id", value=user_id)
+    # response.set_cookie(key="user_id", value=user_id)
     response = RedirectResponse(url="/return-get_2")
     response.set_cookie("username", str(username))
     response.set_cookie(key="access_token", value=access_token['access_token'])
@@ -155,21 +156,41 @@ async def results(request: Request, background_tasks: BackgroundTasks):
 
     return response
 
+
 @app.get('/return-get_2')
 async def results(request: Request, username: Optional[str] = Cookie(None)):
-    return templates.TemplateResponse('account_val.html', {"request": request, "user": username})
+    return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
+                                                           "pc_msg": ''})
 
-@app.post("/promoInput")
+
+@app.post("/checkout")
 async def userInput(request: Request, username: Optional[str] = Cookie(None)):
     try:
+        # Collect User Input
         body = await request.body()
         inputPC = body.decode('UTF-8').split('=')[1].strip()
         approvedPCs = os.environ['PROMO_CODES'].split(',')
-        if inputPC in approvedPCs:
-            return templates.TemplateResponse('payment_val.html', {"request": request, "user": Cookie('user')})
+
+        # Check if promocode entered
+        if len(inputPC) > 0:
+            if inputPC in approvedPCs:
+                return templates.TemplateResponse('payment_val.html', {"request": request, "user": Cookie('user')})
+            else:
+                return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
+                                                                       "pc_msg": 'Incorrect promocode. Please try again.'})
+
+        # If no promocode, then stripe checkout
         else:
-            return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
-                                                                   "return_path": return_path})
+            checkout_session = stripe.checkout.Session.create(
+                success_url=basepath + "/success?session_id={CHECKOUT_SESSION_ID}",
+                cancel_url=basepath,
+                payment_method_types=["card"],
+                mode="payment",
+                line_items=[{
+                    "price": price,
+                    "quantity": 1
+                }], )
+            return RedirectResponse(checkout_session.url, status_code=303)
     except Exception as e:
         print(e)
         return templates.TemplateResponse('error.html', {"request": request})
@@ -179,12 +200,14 @@ async def userInput(request: Request, username: Optional[str] = Cookie(None)):
 async def success(request: Request):
     return templates.TemplateResponse('payment_val.html', {"request": request, "user": Cookie('user')})
 
+
 @app.get("/free_mode")
 async def success(request: Request):
     return templates.TemplateResponse('free_mode.html', {"request": request})
 
+
 @app.get("/learn_more")
-async def read(request: Request, response: Response,):
+async def read(request: Request, response: Response, ):
     return templates.TemplateResponse('learn_more.html', {"request": request})
 
 
@@ -220,10 +243,13 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
         df['Text'] = df['Text'].apply(lambda x: bytes.fromhex(x[2:]).decode('utf-8'))
     except ValueError:
         pass
+
+    df = df.drop_duplicates()
     check_box = r"""<input type="checkbox" id="\1" name="tweet_id" value="\1">
                             <label for="\1">  </label><br>"""
     out_table_html = str(re.sub(r'(\d{18,19})', check_box,
-                                df.drop(columns = ['date_full', 'occurance','username','total_count','index'], axis=1).to_html(index=False).replace(
+                                df.drop(columns=['date_full', 'occurance', 'username', 'total_count', 'index'],
+                                        axis=1).to_html(index=False).replace(
                                     '<td>', '<td align="center">').replace(
                                     '<tr style="text-align: right;">', '<tr style="text-align: center;">').replace(
                                     '<table border="1" class="dataframe">', '<table class="table">')))
@@ -274,6 +300,7 @@ async def selectTweets(request: Request, access_token: Optional[str] = Cookie(No
 
     except:
         return templates.TemplateResponse('error.html', {"request": request})
+
 
 if __name__ == '__main__':
     if os.environ['MODE'] == 'dev':
