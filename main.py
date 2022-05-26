@@ -13,21 +13,22 @@ from fastapi.responses import RedirectResponse
 from typing import Optional
 from sqlalchemy import create_engine
 
-
 ## Configs
 if os.environ['MODE'] == 'dev':
     import uvicorn
 
-    stripe.api_key = os.environ['STRIPE_KEY_DEV']
-    price = "price_1KeQ1PCsKWtKuHp0PIYQ1AnH"
+if os.environ['STRIPE_MODE'] == 'prod':
+    stripe.api_key = os.environ['STRIPE_KEY_PROD']
+    price = "price_1L0We3CsKWtKuHp02UYDbhBF"
 else:
     stripe.api_key = os.environ['STRIPE_KEY_DEV']
     price = "price_1KeQ1PCsKWtKuHp0PIYQ1AnH"
 
-if os.environ['PAY_MODE'] == 'pay':
-    return_path = "create-checkout-session"
-else:
-    return_path = 'free_mode'
+
+# if os.environ['PAY_MODE'] == 'pay':
+#     return_path = "create-checkout-session"
+# else:
+#     return_path = 'free_mode'
 
 
 def HtmlIntake(path):
@@ -63,11 +64,11 @@ def inituserOauth(basepath):
 
 def setBasePath(mode):
     if mode.lower() == 'dev':
-        basepath = 'http://0.0.0.0:5050'
+        basepath = 'http://0.0.0.0:4242'
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     elif mode.lower() == 'prod':
         basepath = "https://www.cleanmytweets.com"
-        #basepath = 'https://cleanmytweets.herokuapp.com'
+        # basepath = 'https://cleanmytweets.herokuapp.com'
 
     return basepath
 
@@ -86,7 +87,7 @@ def getTweets(user_id, client, username):
     out_df = flagDFProces(timeline_df)
 
     total_count = out_df.shape[0]
-    prof_df = out_df[out_df['occurance'] == 1]
+    prof_df = pd.DataFrame(out_df[out_df['occurance'] == 1])
     prof_df['Text'] = prof_df['Text'].apply(lambda x: x.encode('utf-8', 'ignore'))
 
     prof_df['username'] = username
@@ -95,16 +96,15 @@ def getTweets(user_id, client, username):
     # Check length of prof_df
     if len(prof_df) == 0:
         prof_df.loc[1] = [0, "Great work, we've found no controversial tweets in your timeline!",
-                        datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S+00:00'), ' ', 1,
-                        datetime.datetime.now().strftime('%Y-%m-%d'), username, 0]
+                          datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S+00:00'), ' ', 1,
+                          datetime.datetime.now().strftime('%Y-%m-%d'), username, 0]
 
-    user_df = pd.DataFrame([[username,datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S+00:00')]],
-                          columns=['Name', 'Insert_DT'])
+    user_df = pd.DataFrame([[username, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S+00:00')]],
+                           columns=['Name', 'Insert_DT'])
 
     # write to sql
-    prof_df.to_sql('tweets', con=db_engine, if_exists='append')#'replace'
+    prof_df.to_sql('tweets', con=db_engine, if_exists='append')  # 'replace'
     user_df.to_sql('users', con=db_engine, if_exists='append')
-
 
     print('Processing Complete')
 
@@ -121,11 +121,12 @@ oauth2_handler = inituserOauth(basepath)
 app.auth = oauth2_handler
 templates = Jinja2Templates(directory='templates/jinja')
 
+
 @app.get("/")
 async def home(request: Request):
     try:
         authorization_url = app.auth.get_authorization_url()
-        return templates.TemplateResponse('index_j.html', {"request": request,"user_auth_link": authorization_url})
+        return templates.TemplateResponse('index_j.html', {"request": request, "user_auth_link": authorization_url})
 
     except:
         return templates.TemplateResponse('error.html', {"request": request})
@@ -136,13 +137,15 @@ async def results(request: Request, background_tasks: BackgroundTasks):
     try:
         access_token = app.auth.fetch_token(str(request.url))
         client = tweepy.Client(access_token['access_token'])
-    except:
+    except Exception as e:
+        print(e)
+        print(request.url)
         return templates.TemplateResponse('auth_failed.html', {"request": request})
 
     user = client.get_me(user_auth=False)
     username = user.data.username
     user_id = user.data.id
-    #response.set_cookie(key="user_id", value=user_id)
+    # response.set_cookie(key="user_id", value=user_id)
     response = RedirectResponse(url="/return-get_2")
     response.set_cookie("username", str(username))
     response.set_cookie(key="access_token", value=access_token['access_token'])
@@ -153,21 +156,58 @@ async def results(request: Request, background_tasks: BackgroundTasks):
 
     return response
 
+
 @app.get('/return-get_2')
 async def results(request: Request, username: Optional[str] = Cookie(None)):
     return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
-                                                           "return_path": return_path})
+                                                           "pc_msg": ''})
+
+
+@app.post("/checkout")
+async def userInput(request: Request, username: Optional[str] = Cookie(None)):
+    try:
+        # Collect User Input
+        body = await request.body()
+        inputPC = body.decode('UTF-8').split('=')[1].strip()
+        approvedPCs = os.environ['PROMO_CODES'].split(',')
+
+        # Check if promocode entered
+        if len(inputPC) > 0:
+            if inputPC in approvedPCs:
+                return templates.TemplateResponse('payment_val.html', {"request": request, "user": Cookie('user')})
+            else:
+                return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
+                                                                       "pc_msg": 'Incorrect promocode. Please try again.'})
+
+        # If no promocode, then stripe checkout
+        else:
+            checkout_session = stripe.checkout.Session.create(
+                success_url=basepath + "/success?session_id={CHECKOUT_SESSION_ID}",
+                cancel_url=basepath,
+                payment_method_types=["card"],
+                mode="payment",
+                line_items=[{
+                    "price": price,
+                    "quantity": 1
+                }], )
+            return RedirectResponse(checkout_session.url, status_code=303)
+    except Exception as e:
+        print(e)
+        return templates.TemplateResponse('error.html', {"request": request})
+
 
 @app.get("/success")
 async def success(request: Request):
     return templates.TemplateResponse('payment_val.html', {"request": request, "user": Cookie('user')})
 
+
 @app.get("/free_mode")
 async def success(request: Request):
     return templates.TemplateResponse('free_mode.html', {"request": request})
 
+
 @app.get("/learn_more")
-async def read(request: Request, response: Response,):
+async def read(request: Request, response: Response, ):
     return templates.TemplateResponse('learn_more.html', {"request": request})
 
 
@@ -203,10 +243,13 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
         df['Text'] = df['Text'].apply(lambda x: bytes.fromhex(x[2:]).decode('utf-8'))
     except ValueError:
         pass
+
+    df = df.drop_duplicates()
     check_box = r"""<input type="checkbox" id="\1" name="tweet_id" value="\1">
                             <label for="\1">  </label><br>"""
     out_table_html = str(re.sub(r'(\d{18,19})', check_box,
-                                df.drop(['date_full', 'occurance','username','total_count','index'], 1).to_html(index=False).replace(
+                                df.drop(columns=['date_full', 'occurance', 'username', 'total_count', 'index'],
+                                        axis=1).to_html(index=False).replace(
                                     '<td>', '<td align="center">').replace(
                                     '<tr style="text-align: right;">', '<tr style="text-align: center;">').replace(
                                     '<table border="1" class="dataframe">', '<table class="table">')))
@@ -258,6 +301,7 @@ async def selectTweets(request: Request, access_token: Optional[str] = Cookie(No
     except:
         return templates.TemplateResponse('error.html', {"request": request})
 
+
 if __name__ == '__main__':
     if os.environ['MODE'] == 'dev':
-        uvicorn.run(app, port=5050, host='0.0.0.0')
+        uvicorn.run(app, port=4242, host='0.0.0.0')
