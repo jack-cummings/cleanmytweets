@@ -117,15 +117,15 @@ db_engine = create_engine(os.environ['DB_URL'], echo=False)
 
 app = FastAPI()
 basepath = setBasePath(mode)
-oauth2_handler = inituserOauth(basepath)
-app.auth = oauth2_handler
 templates = Jinja2Templates(directory='templates/jinja')
 
 
 @app.get("/")
 async def home(request: Request):
     try:
-        authorization_url = app.auth.get_authorization_url()
+        global oauth2_handler
+        oauth2_handler = inituserOauth(basepath)
+        authorization_url = oauth2_handler.get_authorization_url()
         return templates.TemplateResponse('index_j.html', {"request": request, "user_auth_link": authorization_url})
 
     except:
@@ -133,9 +133,11 @@ async def home(request: Request):
 
 
 @app.get('/return-get', response_class=RedirectResponse)
+
 async def results(request: Request, background_tasks: BackgroundTasks):
     try:
-        access_token = app.auth.fetch_token(str(request.url))
+        access_token = oauth2_handler.fetch_token(str(request.url))
+        print(2)
         client = tweepy.Client(access_token['access_token'])
     except Exception as e:
         print(e)
@@ -170,16 +172,34 @@ async def userInput(request: Request, username: Optional[str] = Cookie(None)):
         body = await request.body()
         inputPC = body.decode('UTF-8').split('=')[1].strip()
         approvedPCs = os.environ['PROMO_CODES'].split(',')
+        halfPCS = os.environ['HALF_PROMO_CODES'].split(',')
 
         # Check if promocode entered
         if len(inputPC) > 0:
+
+            # if full proce promo, no checkout
             if inputPC in approvedPCs:
                 return templates.TemplateResponse('payment_val.html', {"request": request, "user": Cookie('user')})
+
+            # if half-price promo, checkout with default price overwritten
+            elif inputPC in halfPCS:
+                checkout_session = stripe.checkout.Session.create(
+                    success_url=basepath + "/success?session_id={CHECKOUT_SESSION_ID}",
+                    cancel_url=basepath,
+                    payment_method_types=["card"],
+                    mode="payment",
+                    line_items=[{
+                        "price": 'price_1KdhRoCsKWtKuHp0EfcqdUG8',
+                        "quantity": 1
+                    }], )
+                return RedirectResponse(checkout_session.url, status_code=303)
+
+            # If promocode invalid, return error window
             else:
                 return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
                                                                        "pc_msg": 'Incorrect promocode. Please try again.'})
 
-        # If no promocode, then stripe checkout
+        # If no promocode, then full price stripe checkout
         else:
             checkout_session = stripe.checkout.Session.create(
                 success_url=basepath + "/success?session_id={CHECKOUT_SESSION_ID}",
