@@ -128,7 +128,9 @@ async def home(request: Request):
         authorization_url = oauth2_handler.get_authorization_url()
         return templates.TemplateResponse('index_j.html', {"request": request, "user_auth_link": authorization_url})
 
-    except:
+
+    except Exception as e:
+        print(e)
         return templates.TemplateResponse('error.html', {"request": request})
 
 
@@ -211,6 +213,7 @@ async def userInput(request: Request, username: Optional[str] = Cookie(None)):
                     "quantity": 1
                 }], )
             return RedirectResponse(checkout_session.url, status_code=303)
+
     except Exception as e:
         print(e)
         return templates.TemplateResponse('error.html', {"request": request})
@@ -290,7 +293,8 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
                                                                 'table': out_table_html,
                                                                 'total_count': tc,
                                                                 'user': Cookie('user')})
-    except:
+    except Exception as e:
+        print(e)
         return templates.TemplateResponse('error.html', {"request": request})
 
 
@@ -318,7 +322,9 @@ async def selectTweets(request: Request, access_token: Optional[str] = Cookie(No
         elif len(values) >= 17:
             return templates.TemplateResponse('over_15.html', {'request': request})
 
-    except:
+
+    except Exception as e:
+        print(e)
         return templates.TemplateResponse('error.html', {"request": request})
 
 
