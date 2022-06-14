@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from typing import Optional
 from sqlalchemy import create_engine
+import sys
 
 ## Configs
 if os.environ['MODE'] == 'dev':
@@ -146,6 +147,7 @@ async def results(request: Request, background_tasks: BackgroundTasks):
 
     except Exception as e:
         print('ERROR'+str(e))
+        print('ERROR MSG: '+ sys.exc_info()[2])
         print('URL2: ' + str(request.url))
         return templates.TemplateResponse('auth_failed.html', {"request": request})
 
