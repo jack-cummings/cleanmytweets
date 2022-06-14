@@ -126,6 +126,7 @@ async def home(request: Request):
         global oauth2_handler
         oauth2_handler = inituserOauth(basepath)
         authorization_url = oauth2_handler.get_authorization_url()
+        print(authorization_url)
         return templates.TemplateResponse('index_j.html', {"request": request, "user_auth_link": authorization_url})
 
 
@@ -136,14 +137,15 @@ async def home(request: Request):
 
 @app.get('/return-get', response_class=RedirectResponse)
 
-async def results(request: Request, background_tasks: BackgroundTasks, reponse: Response):
+async def results(request: Request, background_tasks: BackgroundTasks):
     try:
+        print('URL1: ' + str(request.url))
         access_token = oauth2_handler.fetch_token(str(request.url))
         client = tweepy.Client(access_token['access_token'])
 
     except Exception as e:
-        print('ERROR'+e)
-        print('ERROR'+request.url)
+        print('ERROR'+str(e))
+        print('URL2: ' + str(request.url))
         return templates.TemplateResponse('auth_failed.html', {"request": request})
 
     user = client.get_me(user_auth=False)
