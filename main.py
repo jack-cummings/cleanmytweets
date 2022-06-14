@@ -123,8 +123,8 @@ templates = Jinja2Templates(directory='templates/jinja')
 @app.get("/")
 async def home(request: Request):
     try:
-        global oauth2_handler
         oauth2_handler = inituserOauth(basepath)
+        app.auth_obj = oauth2_handler
         authorization_url = oauth2_handler.get_authorization_url()
         print(authorization_url)
         return templates.TemplateResponse('index_j.html', {"request": request, "user_auth_link": authorization_url})
@@ -140,7 +140,8 @@ async def home(request: Request):
 async def results(request: Request, background_tasks: BackgroundTasks):
     try:
         print('URL1: ' + str(request.url))
-        access_token = oauth2_handler.fetch_token(str(request.url))
+        time.sleep(2)
+        access_token = app.auth_obj.fetch_token(str(request.url))
         client = tweepy.Client(access_token['access_token'])
 
     except Exception as e:
