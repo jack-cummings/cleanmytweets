@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from typing import Optional
 from sqlalchemy import create_engine
-import sys
+import traceback
 
 ## Configs
 if os.environ['MODE'] == 'dev':
@@ -141,13 +141,12 @@ async def home(request: Request):
 async def results(request: Request, background_tasks: BackgroundTasks):
     try:
         print('URL1: ' + str(request.url))
-        time.sleep(2)
         access_token = app.auth_obj.fetch_token(str(request.url))
         client = tweepy.Client(access_token['access_token'])
 
     except Exception as e:
         print('ERROR'+str(e))
-        print('ERROR MSG: '+ str(sys.exc_info()[2]))
+        print(''.join(traceback.format_tb(e.__traceback__)))
         print('URL2: ' + str(request.url))
         return templates.TemplateResponse('auth_failed.html', {"request": request})
 
