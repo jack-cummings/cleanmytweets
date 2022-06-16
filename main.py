@@ -143,9 +143,7 @@ async def results(request: Request, background_tasks: BackgroundTasks):
         client = tweepy.Client(access_token['access_token'])
 
     except Exception as e:
-        print('ERROR'+str(e))
         print(''.join(traceback.format_tb(e.__traceback__)))
-        print('URL2: ' + str(request.url))
         return templates.TemplateResponse('auth_failed.html', {"request": request})
 
     user = client.get_me(user_auth=False)
