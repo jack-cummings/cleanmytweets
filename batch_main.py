@@ -51,7 +51,7 @@ def writeExcel(df_dict, outpath):
         for user, df in df_dict.items():
             df.to_excel(writer, user)
 
-users = ['@Dalton_ClarkNC']
+users = ['@timothyjmckay','@Jada_Boyd55']
 bad_words_pattern, bad_words = loadWords()
 api = initTwitter()
 dfs = main(users)
