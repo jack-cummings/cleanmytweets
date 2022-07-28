@@ -280,17 +280,24 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
         pass
 
     df = df.drop_duplicates()
+
+    #calc prof count
+    if df.Text.values[0] == "Great work, we've found no controversial tweets in your timeline!":
+        p_count = 0
+    else:
+        p_count = str(df.shape[0])
+
     check_box = r"""<input type="checkbox" id="\1" name="tweet_id" value="\1">
                             <label for="\1">  </label><br>"""
     out_table_html = str(re.sub(r'(\d{18,19})', check_box,
-                                df.drop(columns=['date_full', 'occurance', 'username', 'total_count', 'index'],
+                                df.drop(columns=['date_full', 'occurance', 'username', 'total_count', 'index','Date','Profane Words'],
                                         axis=1).to_html(index=False).replace(
                                     '<td>', '<td align="center">').replace(
                                     '<tr style="text-align: right;">', '<tr style="text-align: center;">').replace(
                                     '<table border="1" class="dataframe">', '<table class="table">')))
 
     return templates.TemplateResponse('v2_tweet_report.html', {"request": request,
-                                                            "p_count": str(df.shape[0]),
+                                                            "p_count": p_count,
                                                             'table': out_table_html,
                                                             'total_count': str(df['total_count'].values[0]),
                                                             'user': username})
