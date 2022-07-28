@@ -132,19 +132,19 @@ async def home(request: Request):
 
     except Exception as e:
         print(e)
-        return templates.TemplateResponse('error.html', {"request": request})
+        return templates.TemplateResponse('v2_error.htm', {"request": request})
 
 
-# @app.get("/webapp_home")
-# async def home(request: Request):
-#     try:
-#         print(authorization_url)
-#         return templates.TemplateResponse('template.html', {"request": request})
-#
-#
-#     except Exception as e:
-#         print(e)
-#         return templates.TemplateResponse('error.html', {"request": request})
+@app.get("/group_code")
+async def home(request: Request):
+    try:
+        print(authorization_url)
+        return templates.TemplateResponse('v2_groupcode.html', {"request": request, "user_auth_link": authorization_url})
+
+
+    except Exception as e:
+        print(e)
+        return templates.TemplateResponse('v2_error.htm', {"request": request})
 
 
 @app.get('/return-get', response_class=RedirectResponse)
@@ -228,7 +228,7 @@ async def userInput(request: Request, username: Optional[str] = Cookie(None)):
 
     except Exception as e:
         print(e)
-        return templates.TemplateResponse('error.html', {"request": request})
+        return templates.TemplateResponse('v2_error.htm', {"request": request})
 
 
 @app.get("/success")
@@ -307,7 +307,7 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
                                                                 'user': Cookie('user')})
     except Exception as e:
         print(e)
-        return templates.TemplateResponse('error.html', {"request": request})
+        return templates.TemplateResponse('v2_error.htm', {"request": request})
 
 
 @app.post('/selectTweets')
@@ -333,7 +333,7 @@ async def selectTweets(request: Request, access_token: Optional[str] = Cookie(No
 
     except Exception as e:
         print(e)
-        return templates.TemplateResponse('error.html', {"request": request})
+        return templates.TemplateResponse('v2_error.htm', {"request": request})
 
 
 if __name__ == '__main__':

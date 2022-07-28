@@ -36,7 +36,7 @@
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link page-scroll" href=/">Features</a>
+                        <a class="nav-link page-scroll" href="/">Features</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link page-scroll" href="/">Pricing</a>
@@ -54,31 +54,23 @@
 </section>
 
 <!--Generic section-->
-<section class="py-7 bg-dark" id="account_val">
+<section class="py-7 bg-dark" id="test">
     <div class="container">
         <div class="row pt-3 pricing-table mx-auto">
             <div class="col-12 mx-auto">
 
                     <div class="card">
                         <div class="card-body">
-                            <h2 class="card-title">Account Validated</h2>
+                            <h2 class="card-title">Thanks For Bringing a Group!</h2>
                             <div class="text-muted font-weight-medium mt-2"> </div>
+                            <h2 class="card-title text-primary mb-0 pt-4">GROUP319</h2>
                             <ul class="list-unstyled pricing-list">
-                                <li>To review @{{ user }}'s  tweet history, checkout with the button below.</li>
-                                <li>{{ pc_msg }}</li>
-                                <li>
-                                    <form method="POST" action="checkout">
-                                        <div class="form-group" role="group" >
-                                            <label for="promocode"> </label>
-                                                <input type="text" class="form-control" id="promocode"
-                                                       placeholder="Enter promocode here"
-                                                       name=promocode_user style="width: 80%">
-                                        </div>
-                                        <button type="submit" class="btn btn-primary">Checkout</button>
-                                    </form>
-                                </li>
+                                <li>Enter your group's promocode from above at checkout for your discounted rate</li>
                             </ul>
-
+                            <a href={{ user_auth_link }} class="btn btn-primary">
+                                Get Started
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
