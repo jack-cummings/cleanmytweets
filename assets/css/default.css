@@ -1412,7 +1412,7 @@ pre {
 
 .form-control {
   display: block;
-  width: 100%;
+  width: 100px;
   padding: 0.55rem 1.5rem;
   font-size: 1rem;
   line-height: 1.5;
@@ -3836,6 +3836,8 @@ input[type="button"].btn-block {
 .progress-bar-animated {
   -webkit-animation: progress-bar-stripes 1s linear infinite;
           animation: progress-bar-stripes 1s linear infinite; }
+
+}
 
 .media {
   display: -ms-flexbox;

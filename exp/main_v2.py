@@ -116,7 +116,7 @@ fetchTweetsPage = HtmlIntake("../templates/legacy/Fetching_tweets.html")
 returnPage = HtmlIntake("../templates/legacy/returnPage2.html")
 index = HtmlIntake("../templates/legacy/index.html")
 tweetCountPage = HtmlIntake("../templates/legacy/tweet_count.html")
-tweetsDeletedPage = HtmlIntake("../templates/webapp/Tweets_deleted.html")
+tweetsDeletedPage = HtmlIntake("../templates/legacy/Tweets_deleted.html")
 over50Page = HtmlIntake("../templates/webapp/over50Page.html")
 initWebsite(returnPage)
 

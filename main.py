@@ -127,7 +127,7 @@ authorization_url = oauth2_handler.get_authorization_url()
 async def home(request: Request):
     try:
         print(authorization_url)
-        return templates.TemplateResponse('index.html', {"request": request})
+        return templates.TemplateResponse('index.html', {"request": request, "user_auth_link": authorization_url})
 
 
     except Exception as e:
@@ -135,16 +135,16 @@ async def home(request: Request):
         return templates.TemplateResponse('error.html', {"request": request})
 
 
-@app.get("/webapp_home")
-async def home(request: Request):
-    try:
-        print(authorization_url)
-        return templates.TemplateResponse('webapp_home.html', {"request": request, "user_auth_link": authorization_url})
-
-
-    except Exception as e:
-        print(e)
-        return templates.TemplateResponse('error.html', {"request": request})
+# @app.get("/webapp_home")
+# async def home(request: Request):
+#     try:
+#         print(authorization_url)
+#         return templates.TemplateResponse('template.html', {"request": request})
+#
+#
+#     except Exception as e:
+#         print(e)
+#         return templates.TemplateResponse('error.html', {"request": request})
 
 
 @app.get('/return-get', response_class=RedirectResponse)
@@ -156,7 +156,7 @@ async def results(request: Request, background_tasks: BackgroundTasks):
 
     except Exception as e:
         print(''.join(traceback.format_tb(e.__traceback__)))
-        return templates.TemplateResponse('auth_failed.html', {"request": request})
+        return templates.TemplateResponse('v2_auth_failed.html', {"request": request})
 
     user = client.get_me(user_auth=False)
     username = user.data.username
@@ -175,7 +175,7 @@ async def results(request: Request, background_tasks: BackgroundTasks):
 
 @app.get('/return-get_2')
 async def results(request: Request, username: Optional[str] = Cookie(None)):
-    return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
+    return templates.TemplateResponse('v2_account_val.html', {"request": request, "user": username,
                                                            "pc_msg": ''})
 
 
@@ -193,7 +193,7 @@ async def userInput(request: Request, username: Optional[str] = Cookie(None)):
 
             # if full proce promo, no checkout
             if inputPC in approvedPCs:
-                return templates.TemplateResponse('payment_val.html', {"request": request, "user": Cookie('user')})
+                return templates.TemplateResponse('v2_payment_val.html', {"request": request, "user": Cookie('user')})
 
             # if half-price promo, checkout with default price overwritten
             elif inputPC in halfPCS:
@@ -210,7 +210,7 @@ async def userInput(request: Request, username: Optional[str] = Cookie(None)):
 
             # If promocode invalid, return error window
             else:
-                return templates.TemplateResponse('account_val.html', {"request": request, "user": username,
+                return templates.TemplateResponse('v2_account_val.html', {"request": request, "user": username,
                                                                        "pc_msg": 'Incorrect promocode. Please try again.'})
 
         # If no promocode, then full price stripe checkout
@@ -233,17 +233,17 @@ async def userInput(request: Request, username: Optional[str] = Cookie(None)):
 
 @app.get("/success")
 async def success(request: Request):
-    return templates.TemplateResponse('payment_val.html', {"request": request, "user": Cookie('user')})
+    return templates.TemplateResponse('v2_payment_val.html', {"request": request, "user": Cookie('user')})
 
 
-@app.get("/free_mode")
-async def success(request: Request):
-    return templates.TemplateResponse('free_mode.html', {"request": request})
+# @app.get("/free_mode")
+# async def success(request: Request):
+#     return templates.TemplateResponse('free_mode.html', {"request": request})
 
 
-@app.get("/learn_more")
-async def read(request: Request, response: Response, ):
-    return templates.TemplateResponse('learn_more.html', {"request": request})
+# @app.get("/learn_more")
+# async def read(request: Request, response: Response, ):
+#     return templates.TemplateResponse('learn_more.html', {"request": request})
 
 
 @app.get('/create-checkout-session')
@@ -289,7 +289,7 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
                                     '<tr style="text-align: right;">', '<tr style="text-align: center;">').replace(
                                     '<table border="1" class="dataframe">', '<table class="table">')))
 
-    return templates.TemplateResponse('returnPage_j.html', {"request": request,
+    return templates.TemplateResponse('v2_tweet_report.html', {"request": request,
                                                             "p_count": str(df.shape[0]),
                                                             'table': out_table_html,
                                                             'total_count': str(df['total_count'].values[0]),
@@ -300,7 +300,7 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
         tc = str(0)
 
     try:
-        return templates.TemplateResponse('returnPage_j.html', {"request": request,
+        return templates.TemplateResponse('v2_tweet_report.html', {"request": request,
                                                                 "p_count": str(df.shape[0]),
                                                                 'table': out_table_html,
                                                                 'total_count': tc,
@@ -316,23 +316,19 @@ async def selectTweets(request: Request, access_token: Optional[str] = Cookie(No
         client = tweepy.Client(access_token)
         body = await request.body()
         values = body.decode("utf-8").replace('tweet_id=', '').split(',')
-        if values == [""]:
-            pass
-        elif len(values) < 17:
-            delete_failed_flag = False
-            for v in values:
-                try:
-                    twitter_client = client
-                    twitter_client.delete_tweet(v, user_auth=False)
-                except:
-                    delete_failed_flag = True
+        values_mod = values[:15]
+        delete_failed_flag = False
+        for v in values_mod:
+            try:
+                twitter_client = client
+                twitter_client.delete_tweet(v, user_auth=False)
+            except:
+                delete_failed_flag = True
             if delete_failed_flag:
                 return templates.TemplateResponse('delete_failed.html', {'request': request})
             else:
                 return templates.TemplateResponse('Tweets_deleted.html', {'request': request,
                                                                           'count': str(len(values))})
-        elif len(values) >= 17:
-            return templates.TemplateResponse('over_15.html', {'request': request})
 
 
     except Exception as e:
