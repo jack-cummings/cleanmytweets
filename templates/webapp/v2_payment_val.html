@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>CleanMyTweets</title>
+    <meta name="description"
+          content="Knight is a beautiful Bootstrap 4 template for product landing pages."/>
+
+    <!--Inter UI font-->
+    <link href="https://rsms.me/inter/inter-ui.css" rel="stylesheet">
+
+    <!--vendors styles-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css">
+
+    <!-- Bootstrap CSS / Color Scheme -->
+    <link rel="stylesheet" href="assets/css/default.css" id="theme-color">
+
+    <!-- For Progressbar-->
+    <link rel=”stylesheet” href=”https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css”>
+    <script src=”https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js”></script>
+    <script src=”https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js”></script>
+    <script src=”https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js”></script>
+
+    <!--- My Scripts-->
+    <script>
+        function showStuff() {
+            document.getElementById("advance_button").style.visibility="visible";
+        }
+            setTimeout("showStuff()",10000);
+
+        function hideStuff() {
+            document.getElementById("fake_button_1").style.visibility="hidden"
+            document.getElementById("fake_button_2").style.visibility="hidden";
+        }
+            setTimeout("hideStuff()",45000);
+    </script>
+    <style>
+        .progress {
+          position: relative;
+          width: 210px;
+          height: 30px;
+          background: #9cbab4;
+          border-radius: 5px;
+          overflow: hidden;
+        }
+
+        .progress__fill {
+          width: 0%;
+          height: 100%;
+          background: #009579;
+          transition: all 20s;
+        }
+
+        .progress__text {
+          position: absolute;
+          top: 50%;
+          right: 5px;
+          transform: translateY(-50%);
+          font: bold 14px "Quicksand", sans-serif;
+          color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+<!--navigation-->
+<section class="smart-scroll">
+    <div class="container-fluid">
+        <nav class="navbar navbar-expand-md navbar-dark">
+            <a class="navbar-brand heading-black" href="index.html">
+                CleanMyTweets
+            </a>
+            <button class="navbar-toggler navbar-toggler-right border-0" type="button" data-toggle="collapse"
+                    data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span data-feather="grid"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link page-scroll" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link page-scroll" href="#pricing">Pricing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link page-scroll" href="#faq">FAQ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link page-scroll" href="#blog">Home</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</section>
+
+<!--Generic section-->
+<section class="py-7 bg-dark" id="pay_val">
+    <div class="container">
+        <div class="row pt-3 pricing-table mx-auto">
+            <div class="col-12 mx-auto">
+                    <div class="card">
+                        <div class="card-body">
+                            <h2 class="card-title">Payment Validated</h2>
+                            <div class="text-muted font-weight-medium mt-2"> </div>
+                            <ul class="list-unstyled pricing-list">
+                                <li>Compiling your tweet report now, when it's finished, a button will appear below this message.</li>
+                                <li>This should take about one minute. Feel free to leave this window and check back.</li>
+                            </ul>
+<!--                            <div class="progress">-->
+<!--                              <div class="progress__fill"></div>-->
+<!--                              <span class="progress__text">0%</span>-->
+<!--                            </div>-->
+                            <a href="scan_tweets" class="btn btn-primary" id="advance_button" style="visibility:hidden;">
+                                Check My Tweets
+                            </a>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+<script>
+    function updateProgressBar(progressBar, value) {
+      value = Math.round(value);
+      progressBar.querySelector(".progress__fill").style.width = `${value}%`;
+      progressBar.querySelector(".progress__text").textContent = `${value}%`;
+    }
+    const myProgressBar = document.querySelector(".progress");
+</script>
+</section>
+
+
+<!--footer-->
+<footer class="py-6">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-5 mr-auto">
+                <h5>About Clean My Tweets</h5>
+                <p class="text-muted"> We  believe that digital citizens have a right to actively review the
+                contents of their online presence ensuring that these align with their presently held morals and values.</p>
+                <ul class="list-inline social social-sm">
+                    <li class="list-inline-item">
+                        <a href=""><i class="fa fa-twitter"></i></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="row mt-5">
+            <div class="col-12 text-muted text-center small-xl">
+                &copy; 2019 Knight - All Rights Reserved
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!--scroll to top-->
+<div class="scroll-top">
+    <i class="fa fa-angle-up" aria-hidden="true"></i>
+</div>
+
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.7.3/feather.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+<script src="assets/js/scripts.js"></script>
+</body>
+</html>

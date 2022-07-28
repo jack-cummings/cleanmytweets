@@ -93,14 +93,14 @@ app = FastAPI()
 basepath = setBasePath(mode)
 oauth2_handler = inituserOauth(basepath)
 app.auth = oauth2_handler
-templates = Jinja2Templates(directory='templates/jinja')
+templates = Jinja2Templates(directory='templates/webapp')
 
 
 @app.get("/")
 async def home(request: Request):
     try:
         authorization_url = app.auth.get_authorization_url()
-        return templates.TemplateResponse('index_j.html', {"request": request, "user_auth_link": authorization_url})
+        return templates.TemplateResponse('webapp_home.html', {"request": request, "user_auth_link": authorization_url})
     except:
         return templates.TemplateResponse('error.html', {"request": request})
 

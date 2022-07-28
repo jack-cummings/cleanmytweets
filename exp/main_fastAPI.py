@@ -48,7 +48,7 @@ def initWebsite(returnPage):
     @app.get("/")
     async def home():
         authorization_url = app.auth.get_authorization_url()
-        return templates.TemplateResponse('index.html')
+        return templates.TemplateResponse('index_boot.html')
 
     @app.route('/return')
     def results():
@@ -115,6 +115,6 @@ fetchTweetsPage = HtmlIntake("../templates/legacy/Fetching_tweets.html")
 returnPage = HtmlIntake("../templates/legacy/returnPage2.html")
 index = HtmlIntake("../templates/legacy/index.html")
 tweetCountPage = HtmlIntake("../templates/legacy/tweet_count.html")
-tweetsDeletedPage = HtmlIntake("../templates/jinja/Tweets_deleted.html")
-over50Page = HtmlIntake("../templates/jinja/over50Page.html")
+tweetsDeletedPage = HtmlIntake("../templates/legacy/Tweets_deleted.html")
+over50Page = HtmlIntake("../templates/webapp/over50Page.html")
 initWebsite(returnPage)
