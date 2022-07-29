@@ -132,7 +132,7 @@ async def home(request: Request):
 
     except Exception as e:
         print(e)
-        return templates.TemplateResponse('v2_error.htm', {"request": request})
+        return templates.TemplateResponse('v2_error.html', {"request": request})
 
 
 @app.get("/group_code")
@@ -144,7 +144,7 @@ async def home(request: Request):
 
     except Exception as e:
         print(e)
-        return templates.TemplateResponse('v2_error.htm', {"request": request})
+        return templates.TemplateResponse('v2_error.html', {"request": request})
 
 
 @app.get('/return-get', response_class=RedirectResponse)
@@ -228,7 +228,7 @@ async def userInput(request: Request, username: Optional[str] = Cookie(None)):
 
     except Exception as e:
         print(e)
-        return templates.TemplateResponse('v2_error.htm', {"request": request})
+        return templates.TemplateResponse('v2_error.html', {"request": request})
 
 
 @app.get("/success")
@@ -314,7 +314,7 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
                                                                 'user': Cookie('user')})
     except Exception as e:
         print(e)
-        return templates.TemplateResponse('v2_error.htm', {"request": request})
+        return templates.TemplateResponse('v2_error.html', {"request": request})
 
 
 @app.post('/selectTweets')
@@ -332,15 +332,15 @@ async def selectTweets(request: Request, access_token: Optional[str] = Cookie(No
             except:
                 delete_failed_flag = True
             if delete_failed_flag:
-                return templates.TemplateResponse('delete_failed.html', {'request': request})
+                return templates.TemplateResponse('v2_delete_failed.html', {'request': request})
             else:
-                return templates.TemplateResponse('Tweets_deleted.html', {'request': request,
+                return templates.TemplateResponse('v2_Tweets_deleted.html', {'request': request,
                                                                           'count': str(len(values))})
 
 
     except Exception as e:
         print(e)
-        return templates.TemplateResponse('v2_error.htm', {"request": request})
+        return templates.TemplateResponse('v2_error.html', {"request": request})
 
 
 if __name__ == '__main__':
