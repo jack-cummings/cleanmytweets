@@ -321,29 +321,29 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
 
 @app.post('/selectTweets')
 async def selectTweets(request: Request, access_token: Optional[str] = Cookie(None)):
-    # try:
-    client = tweepy.Client(access_token)
-    body = await request.body()
-    values = body.decode("utf-8").replace('tweet_id=', '').split(',')
-    values_mod = values[:15]
-    delete_failed_flag = False
-    for v in values_mod:
-        try:
-            twitter_client = client
-            twitter_client.delete_tweet(v, user_auth=False)
-        except Exception as e:
-            print(f'ERROR: {e}')
-            delete_failed_flag = True
-    if delete_failed_flag:
-        return templates.TemplateResponse('v2_delete_failed.html', {'request': request})
-    else:
-        return templates.TemplateResponse('v2_Tweets_deleted.html', {'request': request,
-                                                                     'count': str(len(values))})
+    try:
+        client = tweepy.Client(access_token)
+        body = await request.body()
+        values = body.decode("utf-8").replace('tweet_id=', '').split(',')
+        values_mod = values[:15]
+        delete_failed_flag = False
+        for v in values_mod:
+            try:
+                twitter_client = client
+                twitter_client.delete_tweet(v, user_auth=False)
+            except Exception as e:
+                print(f'ERROR: {e}')
+                delete_failed_flag = True
+        if delete_failed_flag:
+            return templates.TemplateResponse('v2_delete_failed.html', {'request': request})
+        else:
+            return templates.TemplateResponse('v2_tweets_deleted.html', {'request': request,
+                                                                         'count': str(len(values))})
 
 
-    # except Exception as e:
-    #     print(e)
-    #     return templates.TemplateResponse('v2_error.html', {"request": request})
+    except Exception as e:
+        print(e)
+        return templates.TemplateResponse('v2_error.html', {"request": request})
 
 
 if __name__ == '__main__':
