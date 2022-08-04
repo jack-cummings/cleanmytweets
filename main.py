@@ -123,6 +123,7 @@ app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 oauth2_handler = inituserOauth(basepath)
 authorization_url = oauth2_handler.get_authorization_url()
 
+
 @app.get("/")
 async def home(request: Request):
     try:
@@ -139,7 +140,8 @@ async def home(request: Request):
 async def home(request: Request):
     try:
         print(authorization_url)
-        return templates.TemplateResponse('v2_groupcode.html', {"request": request, "user_auth_link": authorization_url})
+        return templates.TemplateResponse('v2_groupcode.html',
+                                          {"request": request, "user_auth_link": authorization_url})
 
 
     except Exception as e:
@@ -148,7 +150,6 @@ async def home(request: Request):
 
 
 @app.get('/return-get', response_class=RedirectResponse)
-
 async def results(request: Request, background_tasks: BackgroundTasks):
     try:
         access_token = oauth2_handler.fetch_token(str(request.url))
@@ -176,7 +177,7 @@ async def results(request: Request, background_tasks: BackgroundTasks):
 @app.get('/return-get_2')
 async def results(request: Request, username: Optional[str] = Cookie(None)):
     return templates.TemplateResponse('v2_account_val.html', {"request": request, "user": username,
-                                                           "pc_msg": ''})
+                                                              "pc_msg": ''})
 
 
 @app.post("/checkout")
@@ -211,7 +212,7 @@ async def userInput(request: Request, username: Optional[str] = Cookie(None)):
             # If promocode invalid, return error window
             else:
                 return templates.TemplateResponse('v2_account_val.html', {"request": request, "user": username,
-                                                                       "pc_msg": 'Incorrect promocode. Please try again.'})
+                                                                          "pc_msg": 'Incorrect promocode. Please try again.'})
 
         # If no promocode, then full price stripe checkout
         else:
@@ -281,7 +282,7 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
 
     df = df.drop_duplicates()
 
-    #calc prof count
+    # calc prof count
     if df.Text.values[0] == "Great work, we've found no controversial tweets in your timeline!":
         p_count = 0
     else:
@@ -290,17 +291,18 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
     check_box = r"""<input type="checkbox" id="\1" name="tweet_id" value="\1">
                             <label for="\1">  </label><br>"""
     out_table_html = str(re.sub(r'(\d{18,19})', check_box,
-                                df.drop(columns=['date_full', 'occurance', 'username', 'total_count', 'index','Date','Profane Words'],
+                                df.drop(columns=['date_full', 'occurance', 'username', 'total_count', 'index', 'Date',
+                                                 'Profane Words'],
                                         axis=1).to_html(index=False).replace(
                                     '<td>', '<td align="center">').replace(
                                     '<tr style="text-align: right;">', '<tr style="text-align: center;">').replace(
                                     '<table border="1" class="dataframe">', '<table class="table">')))
 
     return templates.TemplateResponse('v2_tweet_report.html', {"request": request,
-                                                            "p_count": p_count,
-                                                            'table': out_table_html,
-                                                            'total_count': str(df['total_count'].values[0]),
-                                                            'user': username})
+                                                               "p_count": p_count,
+                                                               'table': out_table_html,
+                                                               'total_count': str(df['total_count'].values[0]),
+                                                               'user': username})
     try:
         tc = str(df['total_count'].values[0])
     except:
@@ -308,10 +310,10 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
 
     try:
         return templates.TemplateResponse('v2_tweet_report.html', {"request": request,
-                                                                "p_count": str(df.shape[0]),
-                                                                'table': out_table_html,
-                                                                'total_count': tc,
-                                                                'user': Cookie('user')})
+                                                                   "p_count": str(df.shape[0]),
+                                                                   'table': out_table_html,
+                                                                   'total_count': tc,
+                                                                   'user': Cookie('user')})
     except Exception as e:
         print(e)
         return templates.TemplateResponse('v2_error.html', {"request": request})
@@ -329,13 +331,14 @@ async def selectTweets(request: Request, access_token: Optional[str] = Cookie(No
             try:
                 twitter_client = client
                 twitter_client.delete_tweet(v, user_auth=False)
-            except:
+            except Exception as e:
+                print(f'ERROR: {e}')
                 delete_failed_flag = True
-            if delete_failed_flag:
-                return templates.TemplateResponse('v2_delete_failed.html', {'request': request})
-            else:
-                return templates.TemplateResponse('v2_Tweets_deleted.html', {'request': request,
-                                                                          'count': str(len(values))})
+        if delete_failed_flag:
+            return templates.TemplateResponse('v2_delete_failed.html', {'request': request})
+        else:
+            return templates.TemplateResponse('v2_Tweets_deleted.html', {'request': request,
+                                                                         'count': str(len(values))})
 
 
     except Exception as e:
