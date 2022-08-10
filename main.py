@@ -26,12 +26,6 @@ else:
     price = "price_1KeQ1PCsKWtKuHp0PIYQ1AnH"
 
 
-# if os.environ['PAY_MODE'] == 'pay':
-#     return_path = "create-checkout-session"
-# else:
-#     return_path = 'free_mode'
-
-
 def HtmlIntake(path):
     with open(path) as f:
         lines = f.readlines()
@@ -162,7 +156,6 @@ async def results(request: Request, background_tasks: BackgroundTasks):
     user = client.get_me(user_auth=False)
     username = user.data.username
     user_id = user.data.id
-    # response.set_cookie(key="user_id", value=user_id)
     response = RedirectResponse(url="/return-get_2")
     response.set_cookie("username", str(username))
     response.set_cookie(key="access_token", value=access_token['access_token'])
@@ -235,17 +228,6 @@ async def userInput(request: Request, username: Optional[str] = Cookie(None)):
 @app.get("/success")
 async def success(request: Request):
     return templates.TemplateResponse('v2_payment_val.html', {"request": request, "user": Cookie('user')})
-
-
-# @app.get("/free_mode")
-# async def success(request: Request):
-#     return templates.TemplateResponse('free_mode.html', {"request": request})
-
-
-# @app.get("/learn_more")
-# async def read(request: Request, response: Response, ):
-#     return templates.TemplateResponse('learn_more.html', {"request": request})
-
 
 @app.get('/create-checkout-session')
 async def create_checkout_session(request: Request):
