@@ -26,12 +26,6 @@ else:
     price = "price_1KeQ1PCsKWtKuHp0PIYQ1AnH"
 
 
-# if os.environ['PAY_MODE'] == 'pay':
-#     return_path = "create-checkout-session"
-# else:
-#     return_path = 'free_mode'
-
-
 def HtmlIntake(path):
     with open(path) as f:
         lines = f.readlines()
@@ -162,7 +156,6 @@ async def results(request: Request, background_tasks: BackgroundTasks):
     user = client.get_me(user_auth=False)
     username = user.data.username
     user_id = user.data.id
-    # response.set_cookie(key="user_id", value=user_id)
     response = RedirectResponse(url="/return-get_2")
     response.set_cookie("username", str(username))
     response.set_cookie(key="access_token", value=access_token['access_token'])
@@ -176,76 +169,130 @@ async def results(request: Request, background_tasks: BackgroundTasks):
 
 @app.get('/return-get_2')
 async def results(request: Request, username: Optional[str] = Cookie(None)):
-    return templates.TemplateResponse('v2_account_val.html', {"request": request, "user": username,
-                                                              "pc_msg": ''})
+    return templates.TemplateResponse('v2_account_val_dono.html', {"request": request})
 
-
-@app.post("/checkout")
-async def userInput(request: Request, username: Optional[str] = Cookie(None)):
+@app.get("/checkout_0")
+async def checkout_0(request: Request):
     try:
-        # Collect User Input
-        body = await request.body()
-        inputPC = body.decode('UTF-8').split('=')[1].strip()
-        approvedPCs = os.environ['PROMO_CODES'].split(',')
-        halfPCS = os.environ['HALF_PROMO_CODES'].split(',')
+        return templates.TemplateResponse('v2_payment_val.html', {"request": request, "user": Cookie('user')})
 
-        # Check if promocode entered
-        if len(inputPC) > 0:
+    except Exception as e:
+        print(e)
+        return templates.TemplateResponse('v2_error.html', {"request": request})
 
-            # if full proce promo, no checkout
-            if inputPC in approvedPCs:
-                return templates.TemplateResponse('v2_payment_val.html', {"request": request, "user": Cookie('user')})
-
-            # if half-price promo, checkout with default price overwritten
-            elif inputPC in halfPCS:
-                checkout_session = stripe.checkout.Session.create(
-                    success_url=basepath + "/success?session_id={CHECKOUT_SESSION_ID}",
-                    cancel_url=basepath,
-                    payment_method_types=["card"],
-                    mode="payment",
-                    line_items=[{
-                        "price": 'price_1KdhRoCsKWtKuHp0EfcqdUG8',
-                        "quantity": 1
-                    }], )
-                return RedirectResponse(checkout_session.url, status_code=303)
-
-            # If promocode invalid, return error window
-            else:
-                return templates.TemplateResponse('v2_account_val.html', {"request": request, "user": username,
-                                                                          "pc_msg": 'Incorrect promocode. Please try again.'})
-
-        # If no promocode, then full price stripe checkout
-        else:
-            checkout_session = stripe.checkout.Session.create(
-                success_url=basepath + "/success?session_id={CHECKOUT_SESSION_ID}",
-                cancel_url=basepath,
-                payment_method_types=["card"],
-                mode="payment",
-                line_items=[{
-                    "price": price,
-                    "quantity": 1
-                }], )
-            return RedirectResponse(checkout_session.url, status_code=303)
+@app.get("/checkout_5")
+async def checkout_5(request: Request):
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            success_url=basepath + "/success?session_id={CHECKOUT_SESSION_ID}",
+            cancel_url=basepath,
+            payment_method_types=["card"],
+            mode="payment",
+            line_items=[{
+                "price": 'price_1KdhRoCsKWtKuHp0EfcqdUG8',
+                "quantity": 1
+            }], )
+        return RedirectResponse(checkout_session.url, status_code=303)
 
     except Exception as e:
         print(e)
         return templates.TemplateResponse('v2_error.html', {"request": request})
 
 
+@app.get("/checkout_10")
+async def userInput(request: Request):
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            success_url=basepath + "/success?session_id={CHECKOUT_SESSION_ID}",
+            cancel_url=basepath,
+            payment_method_types=["card"],
+            mode="payment",
+            line_items=[{
+                "price": 'price_1L0We3CsKWtKuHp02UYDbhBF',
+                "quantity": 1
+            }], )
+        return RedirectResponse(checkout_session.url, status_code=303)
+
+    except Exception as e:
+        print(e)
+        return templates.TemplateResponse('v2_error.html', {"request": request})
+
+
+@app.get("/checkout_20")
+async def userInput(request: Request):
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            success_url=basepath + "/success?session_id={CHECKOUT_SESSION_ID}",
+            cancel_url=basepath,
+            payment_method_types=["card"],
+            mode="payment",
+            line_items=[{
+                "price": 'price_1LTSwlCsKWtKuHp09XwQgw5r',
+                "quantity": 1
+            }], )
+        return RedirectResponse(checkout_session.url, status_code=303)
+
+    except Exception as e:
+        print(e)
+        return templates.TemplateResponse('v2_error.html', {"request": request})
+
+
+#
+# @app.post("/checkout")
+# async def userInput(request: Request, username: Optional[str] = Cookie(None)):
+#     try:
+#         # Collect User Input
+#         body = await request.body()
+#         inputPC = body.decode('UTF-8').split('=')[1].strip()
+#         approvedPCs = os.environ['PROMO_CODES'].split(',')
+#         halfPCS = os.environ['HALF_PROMO_CODES'].split(',')
+#
+#         # Check if promocode entered
+#         if len(inputPC) > 0:
+#
+#             # if full proce promo, no checkout
+#             if inputPC in approvedPCs:
+#                 return templates.TemplateResponse('v2_payment_val.html', {"request": request, "user": Cookie('user')})
+#
+#             # if half-price promo, checkout with default price overwritten
+#             elif inputPC in halfPCS:
+#                 checkout_session = stripe.checkout.Session.create(
+#                     success_url=basepath + "/success?session_id={CHECKOUT_SESSION_ID}",
+#                     cancel_url=basepath,
+#                     payment_method_types=["card"],
+#                     mode="payment",
+#                     line_items=[{
+#                         "price": 'price_1KdhRoCsKWtKuHp0EfcqdUG8',
+#                         "quantity": 1
+#                     }], )
+#                 return RedirectResponse(checkout_session.url, status_code=303)
+#
+#             # If promocode invalid, return error window
+#             else:
+#                 return templates.TemplateResponse('v2_account_val.html', {"request": request, "user": username,
+#                                                                           "pc_msg": 'Incorrect promocode. Please try again.'})
+#
+#         # If no promocode, then full price stripe checkout
+#         else:
+#             checkout_session = stripe.checkout.Session.create(
+#                 success_url=basepath + "/success?session_id={CHECKOUT_SESSION_ID}",
+#                 cancel_url=basepath,
+#                 payment_method_types=["card"],
+#                 mode="payment",
+#                 line_items=[{
+#                     "price": price,
+#                     "quantity": 1
+#                 }], )
+#             return RedirectResponse(checkout_session.url, status_code=303)
+#
+#     except Exception as e:
+#         print(e)
+#         return templates.TemplateResponse('v2_error.html', {"request": request})
+
+
 @app.get("/success")
 async def success(request: Request):
     return templates.TemplateResponse('v2_payment_val.html', {"request": request, "user": Cookie('user')})
-
-
-# @app.get("/free_mode")
-# async def success(request: Request):
-#     return templates.TemplateResponse('free_mode.html', {"request": request})
-
-
-# @app.get("/learn_more")
-# async def read(request: Request, response: Response, ):
-#     return templates.TemplateResponse('learn_more.html', {"request": request})
-
 
 @app.get('/create-checkout-session')
 async def create_checkout_session(request: Request):

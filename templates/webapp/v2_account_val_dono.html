@@ -5,6 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>CleanMyTweets</title>
+    <meta name="description"
+          content="Knight is a beautiful Bootstrap 4 template for product landing pages."/>
+
     <!--Inter UI font-->
     <link href="https://rsms.me/inter/inter-ui.css" rel="stylesheet">
 
@@ -22,7 +25,7 @@
 <section class="smart-scroll">
     <div class="container-fluid">
         <nav class="navbar navbar-expand-md navbar-dark">
-            <a class="navbar-brand heading-black" href="/">
+            <a class="navbar-brand heading-black" href="index.html">
                 CleanMyTweets
             </a>
             <button class="navbar-toggler navbar-toggler-right border-0" type="button" data-toggle="collapse"
@@ -58,25 +61,18 @@
 
                     <div class="card">
                         <div class="card-body">
-                            <h2 class="card-title">Account Validated</h2>
+                            <h2 class="card-title">We are 100% Supported by Donations </h2>
                             <div class="text-muted font-weight-medium mt-2"> </div>
                             <ul class="list-unstyled pricing-list">
-                                <li>To review @{{ user }}'s  tweet history, checkout with the button below.</li>
-                                <li>{{ pc_msg }}</li>
-                                <li>
-                                    <form method="POST" action="checkout">
-                                        <div class="form-group" role="group" >
-                                            <label for="promocode"> </label>
-                                                <input type="text" class="form-control" id="promocode"
-                                                       placeholder="Enter promocode"
-                                                       name=promocode_user style="width: 80%">
-                                        </div>
-                                        <button type="submit" class="btn btn-primary">Checkout</button>
-                                    </form>
-                                </li>
+                                <li>Help Keep CleanMyTweets free. Your donation directly supports the site's developers.</li>
+                                <li>Select from any of the donation amounts below, or select $0 to continue without making a donation.</li>
+                                <div class="btn-group-sm" role="group" aria-label="Basic example">
+                                    <a href='/checkout_0'class="btn btn-primary">$0</a>
+                                    <a href='/checkout_5'class="btn btn-primary">$5</a>
+                                    <a href='/checkout_10'class="btn btn-primary">$10</a>
+                                    <a href='/checkout_20'class="btn btn-primary">$20</a>
+                                </div>
                             </ul>
-
-                    </div>
                 </div>
             </div>
         </div>
@@ -103,8 +99,7 @@
         </div>
         <div class="row mt-5">
             <div class="col-12 text-muted text-center small-xl">
-                Web Template: &copy; 2019 Knight - All Rights Reserved
-                Twitter-Interaction services operated by Cummings Technology Ventures LLC.
+                &copy; 2019 Knight - All Rights Reserved
             </div>
         </div>
     </div>
