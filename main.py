@@ -13,6 +13,7 @@ from fastapi.responses import RedirectResponse
 from typing import Optional
 from sqlalchemy import create_engine
 import traceback
+from cryptography.fernet import Fernet
 
 ## Configs
 if os.environ['MODE'] == 'dev':
@@ -115,6 +116,9 @@ mode = os.environ['MODE']
 bad_words_pattern, bad_words = loadWords(mode)
 # init DB
 db_engine = create_engine(os.environ['DB_URL'], echo=False)
+# init key
+key = Fernet.generate_key()
+fernet = Fernet(key)
 
 app = FastAPI()
 basepath = setBasePath(mode)
@@ -161,33 +165,40 @@ async def results(request: Request, background_tasks: BackgroundTasks):
 
     user = client.get_me(user_auth=False)
     username = user.data.username
+    username_enc = fernet.encrypt(username.encode())
     user_id = user.data.id
     # response.set_cookie(key="user_id", value=user_id)
+    access_token_enc = fernet.encrypt(access_token['access_token'].encode())
     response = RedirectResponse(url="/return-get_2")
-    response.set_cookie("username", str(username))
-    response.set_cookie(key="access_token", value=access_token['access_token'])
+    response.set_cookie("username", username_enc)
+    response.set_cookie(key="access_token", value=access_token_enc)
 
     # Begin Timeline scrape
-    print(f'beginning scrape: {username}')
+    print(f'beginning scrape: {username_enc}')
     background_tasks.add_task(getTweets, user_id=user_id, client=client, username=username)
 
     return response
 
 
 @app.get('/return-get_2')
-async def results(request: Request, username: Optional[str] = Cookie(None)):
-    return templates.TemplateResponse('v2_account_val.html', {"request": request, "user": username,
+async def results(request: Request, username: Optional[bytes] = Cookie(None)):
+    # decode username
+    username_dc = fernet.decrypt(username[2:-1]).decode()
+    return templates.TemplateResponse('v2_account_val.html', {"request": request, "user": username_dc,
                                                               "pc_msg": ''})
 
 
 @app.post("/checkout")
-async def userInput(request: Request, username: Optional[str] = Cookie(None)):
+async def userInput(request: Request, username: Optional[bytes] = Cookie(None)):
     try:
         # Collect User Input
         body = await request.body()
         inputPC = body.decode('UTF-8').split('=')[1].strip()
         approvedPCs = os.environ['PROMO_CODES'].split(',')
         halfPCS = os.environ['HALF_PROMO_CODES'].split(',')
+
+        # decode username
+        username_dc = fernet.decrypt(username[2:-1]).decode()
 
         # Check if promocode entered
         if len(inputPC) > 0:
@@ -211,7 +222,7 @@ async def userInput(request: Request, username: Optional[str] = Cookie(None)):
 
             # If promocode invalid, return error window
             else:
-                return templates.TemplateResponse('v2_account_val.html', {"request": request, "user": username,
+                return templates.TemplateResponse('v2_account_val.html', {"request": request, "user": username_dc,
                                                                           "pc_msg": 'Incorrect promocode. Please try again.'})
 
         # If no promocode, then full price stripe checkout
@@ -263,17 +274,21 @@ async def create_checkout_session(request: Request):
 
 
 @app.get("/scan_tweets")
-async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
+async def scan_tweets(request: Request, username: Optional[bytes] = Cookie(None)):
+
+    # decode username
+    username_dc = fernet.decrypt(username[2:-1]).decode()
+
     # pull rows
     query = (f"""
             SELECT * 
             FROM tweets
-            WHERE username = '{username}'""")
+            WHERE username = '{username_dc}'""")
 
     df = pd.read_sql_query(query, db_engine)
 
     # delete from DB
-    db_engine.execute(f"DELETE FROM tweets WHERE username = '{username}'")
+    db_engine.execute(f"DELETE FROM tweets WHERE username = '{username_dc}'")
 
     try:
         df['Text'] = df['Text'].apply(lambda x: bytes.fromhex(x[2:]).decode('utf-8'))
@@ -302,7 +317,7 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
                                                                "p_count": p_count,
                                                                'table': out_table_html,
                                                                'total_count': str(df['total_count'].values[0]),
-                                                               'user': username})
+                                                               'user': username_dc})
     try:
         tc = str(df['total_count'].values[0])
     except:
@@ -320,8 +335,9 @@ async def scan_tweets(request: Request, username: Optional[str] = Cookie(None)):
 
 
 @app.post('/selectTweets')
-async def selectTweets(request: Request, access_token: Optional[str] = Cookie(None)):
+async def selectTweets(request: Request, access_token: Optional[bytes] = Cookie(None)):
     try:
+        access_token = fernet.decrypt(access_token[2:-1]).decode()
         client = tweepy.Client(access_token)
         body = await request.body()
         values = body.decode("utf-8").replace('tweet_id=', '').split(',')
