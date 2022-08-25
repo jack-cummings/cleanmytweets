@@ -7,3 +7,6 @@ gunicorn==20.1.0
 jinja2==3.0.3
 psycopg2==2.9.3
 sqlalchemy==1.4.36
+cryptography==37.0.4
+
+
