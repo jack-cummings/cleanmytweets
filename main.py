@@ -14,6 +14,8 @@ from typing import Optional
 from sqlalchemy import create_engine
 import traceback
 from cryptography.fernet import Fernet
+import sqlite3
+
 
 ## Configs
 if os.environ['MODE'] == 'dev':
@@ -97,7 +99,7 @@ def getTweets(user_id, client, username):
 
     # Check length of prof_df
     if len(prof_df) == 0:
-        prof_df.loc[1] = [0, "Great work, we've found no controversial tweets in your timeline!",
+        prof_df.loc[1] = [0, b"Great work, we've found no controversial tweets in your timeline!",
                           datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S+00:00'), ' ', 1,
                           datetime.datetime.now().strftime('%Y-%m-%d'), username, 0]
 
@@ -105,8 +107,8 @@ def getTweets(user_id, client, username):
                            columns=['Name', 'Insert_DT'])
 
     # write to sql
-    prof_df.to_sql('tweets', con=db_engine, if_exists='append')  # 'replace'
-    user_df.to_sql('users', con=db_engine, if_exists='append')
+    con = sqlite3.connect("tweets.db")
+    prof_df.to_sql(name=username, con=con, if_exists='replace')
 
     print('Processing Complete')
 
@@ -115,7 +117,7 @@ def getTweets(user_id, client, username):
 mode = os.environ['MODE']
 bad_words_pattern, bad_words = loadWords(mode)
 # init DB
-db_engine = create_engine(os.environ['DB_URL'], echo=False)
+con = sqlite3.connect("tweets.db")
 # init key
 key = Fernet.generate_key()
 fernet = Fernet(key)
@@ -174,7 +176,7 @@ async def results(request: Request, background_tasks: BackgroundTasks):
     response.set_cookie(key="access_token", value=access_token_enc)
 
     # Begin Timeline scrape
-    print(f'beginning scrape: {username_enc}')
+    print(f'beginning scrape: {username}')
     background_tasks.add_task(getTweets, user_id=user_id, client=client, username=username)
 
     return response
@@ -279,22 +281,16 @@ async def scan_tweets(request: Request, username: Optional[bytes] = Cookie(None)
     # decode username
     username_dc = fernet.decrypt(username[2:-1]).decode()
 
-    # pull rows
-    query = (f"""
-            SELECT * 
-            FROM tweets
-            WHERE username = '{username_dc}'""")
 
-    df = pd.read_sql_query(query, db_engine)
+    # pull rows sqlite
+    df = pd.read_sql(f'select * from {username_dc}', con)
 
-    # delete from DB
-    db_engine.execute(f"DELETE FROM tweets WHERE username = '{username_dc}'")
+    # delete rows sqlite
+    con.cursor().execute(f'DROP table {username_dc}')
+    con.commit()
 
-    try:
-        df['Text'] = df['Text'].apply(lambda x: bytes.fromhex(x[2:]).decode('utf-8'))
-    except ValueError:
-        pass
 
+    df['Text'] = df['Text'].apply(lambda x: x.decode().replace('\n', ' '))
     df = df.drop_duplicates()
 
     # calc prof count
