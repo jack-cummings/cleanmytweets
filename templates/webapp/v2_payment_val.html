@@ -14,14 +14,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css">
 
+
     <!-- Bootstrap CSS / Color Scheme -->
     <link rel="stylesheet" href="assets/css/default.css" id="theme-color">
-
-    <!-- For Progressbar-->
-    <link rel=”stylesheet” href=”https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css”>
-    <script src=”https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js”></script>
-    <script src=”https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js”></script>
-    <script src=”https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js”></script>
 
     <!--- My Scripts-->
     <script>
@@ -32,36 +27,10 @@
 
         function hideStuff() {
             document.getElementById("fake_button_1").style.visibility="hidden"
-            document.getElementById("fake_button_2").style.visibility="hidden";
+            document.getElementById("spinner11").style.visibility="hidden";
         }
             setTimeout("hideStuff()",45000);
     </script>
-    <style>
-        .progress {
-          position: relative;
-          width: 210px;
-          height: 30px;
-          background: #9cbab4;
-          border-radius: 5px;
-          overflow: hidden;
-        }
-
-        .progress__fill {
-          width: 0%;
-          height: 100%;
-          background: #009579;
-          transition: all 20s;
-        }
-
-        .progress__text {
-          position: absolute;
-          top: 50%;
-          right: 5px;
-          transform: translateY(-50%);
-          font: bold 14px "Quicksand", sans-serif;
-          color: #ffffff;
-        }
-    </style>
 </head>
 <body>
 
@@ -110,6 +79,7 @@
                                 <li>Compiling your tweet report now, when it's finished, a button will appear below this message.</li>
                                 <li>This should take about one minute. DO NOT CLOSE THIS WINDOW.</li>
                             </ul>
+                            <div class="spinner-border text-success" role="status" id="spinner"><span class="sr-only">Loading...</span></div>
                             <a href="scan_tweets" class="btn btn-primary" id="advance_button" style="visibility:hidden;">
                                 Check My Tweets
                             </a>
@@ -120,14 +90,6 @@
     </div>
   </div>
 </div>
-<script>
-    function updateProgressBar(progressBar, value) {
-      value = Math.round(value);
-      progressBar.querySelector(".progress__fill").style.width = `${value}%`;
-      progressBar.querySelector(".progress__text").textContent = `${value}%`;
-    }
-    const myProgressBar = document.querySelector(".progress");
-</script>
 </section>
 
 
@@ -163,7 +125,7 @@
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.7.3/feather.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
 <script src="assets/js/scripts.js"></script>

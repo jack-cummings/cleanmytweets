@@ -133,13 +133,24 @@ authorization_url = oauth2_handler.get_authorization_url()
 @app.get("/")
 async def home(request: Request):
     try:
-        print(authorization_url)
-        return templates.TemplateResponse('index.html', {"request": request, "user_auth_link": authorization_url})
+        return templates.TemplateResponse('index.html', {"request": request})
 
 
     except Exception as e:
         print(e)
         return templates.TemplateResponse('v2_error.html', {"request": request})
+
+
+@app.get("/hint")
+async def hint(request: Request):
+    try:
+        return templates.TemplateResponse('hint.html', {"request": request, "user_auth_link": authorization_url})
+
+    except Exception as e:
+        print(e)
+        return templates.TemplateResponse('v2_error.html', {"request": request})
+
+
 
 
 @app.get("/group_code")
