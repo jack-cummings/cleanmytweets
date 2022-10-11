@@ -60,7 +60,6 @@ def inituserOauth(basepath):
         client_id=os.getenv('CLIENT_ID'),
         redirect_uri=f'{basepath}/return-get',
         scope=["tweet.read", "tweet.write", "users.read"],
-        # Client Secret is only necessary if using a confidential client
         client_secret=os.getenv('CLIENT_SECRET'))
 
     return oauth2_user_handler
