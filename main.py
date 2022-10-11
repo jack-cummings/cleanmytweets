@@ -196,7 +196,7 @@ async def results(request: Request, background_tasks: BackgroundTasks):
 async def results(request: Request, username: Optional[bytes] = Cookie(None)):
     # decode username
     username_dc = fernet.decrypt(username[2:-1]).decode()
-    return templates.TemplateResponse('v2_account_val_dono.html', {"request": request, "user": username_dc,
+    return templates.TemplateResponse('v2_account_val.html', {"request": request, "user": username_dc,
                                                               "pc_msg": ''})
 
 @app.get("/checkout_0")
@@ -267,59 +267,59 @@ async def userInput(request: Request):
 
 
 
-# @app.post("/checkout")
-# async def userInput(request: Request, username: Optional[bytes] = Cookie(None)):
-#     try:
-#         # Collect User Input
-#         body = await request.body()
-#         inputPC = body.decode('UTF-8').split('=')[1].strip()
-#         approvedPCs = os.environ['PROMO_CODES'].split(',')
-#         halfPCS = os.environ['HALF_PROMO_CODES'].split(',')
-#
-#         # decode username
-#         username_dc = fernet.decrypt(username[2:-1]).decode()
-#
-#         # Check if promocode entered
-#         if len(inputPC) > 0:
-#
-#             # if full proce promo, no checkout
-#             if inputPC in approvedPCs:
-#                 return templates.TemplateResponse('v2_payment_val.html', {"request": request, "user": Cookie('user')})
-#
-#             # if half-price promo, checkout with default price overwritten
-#             elif inputPC in halfPCS:
-#                 checkout_session = stripe.checkout.Session.create(
-#                     success_url=basepath + "/success?session_id={CHECKOUT_SESSION_ID}",
-#                     cancel_url=basepath,
-#                     payment_method_types=["card"],
-#                     mode="payment",
-#                     line_items=[{
-#                         "price": 'price_1KdhRoCsKWtKuHp0EfcqdUG8',
-#                         "quantity": 1
-#                     }], )
-#                 return RedirectResponse(checkout_session.url, status_code=303)
-#
-#             # If promocode invalid, return error window
-#             else:
-#                 return templates.TemplateResponse('v2_account_val.html', {"request": request, "user": username_dc,
-#                                                                           "pc_msg": 'Incorrect promocode. Please try again.'})
-#
-#         # If no promocode, then full price stripe checkout
-#         else:
-#             checkout_session = stripe.checkout.Session.create(
-#                 success_url=basepath + "/success?session_id={CHECKOUT_SESSION_ID}",
-#                 cancel_url=basepath,
-#                 payment_method_types=["card"],
-#                 mode="payment",
-#                 line_items=[{
-#                     "price": price,
-#                     "quantity": 1
-#                 }], )
-#             return RedirectResponse(checkout_session.url, status_code=303)
-#
-#     except Exception as e:
-#         print(e)
-#         return templates.TemplateResponse('v2_error.html', {"request": request})
+@app.post("/checkout")
+async def userInput(request: Request, username: Optional[bytes] = Cookie(None)):
+    try:
+        # Collect User Input
+        body = await request.body()
+        inputPC = body.decode('UTF-8').split('=')[1].strip()
+        approvedPCs = os.environ['PROMO_CODES'].split(',')
+        halfPCS = os.environ['HALF_PROMO_CODES'].split(',')
+
+        # decode username
+        username_dc = fernet.decrypt(username[2:-1]).decode()
+
+        # Check if promocode entered
+        if len(inputPC) > 0:
+
+            # if full proce promo, no checkout
+            if inputPC in approvedPCs:
+                return templates.TemplateResponse('v2_payment_val.html', {"request": request, "user": Cookie('user')})
+
+            # if half-price promo, checkout with default price overwritten
+            elif inputPC in halfPCS:
+                checkout_session = stripe.checkout.Session.create(
+                    success_url=basepath + "/success?session_id={CHECKOUT_SESSION_ID}",
+                    cancel_url=basepath,
+                    payment_method_types=["card"],
+                    mode="payment",
+                    line_items=[{
+                        "price": 'price_1KdhRoCsKWtKuHp0EfcqdUG8',
+                        "quantity": 1
+                    }], )
+                return RedirectResponse(checkout_session.url, status_code=303)
+
+            # If promocode invalid, return error window
+            else:
+                return templates.TemplateResponse('v2_account_val.html', {"request": request, "user": username_dc,
+                                                                          "pc_msg": 'Incorrect promocode. Please try again.'})
+
+        # If no promocode, then full price stripe checkout
+        else:
+            checkout_session = stripe.checkout.Session.create(
+                success_url=basepath + "/success?session_id={CHECKOUT_SESSION_ID}",
+                cancel_url=basepath,
+                payment_method_types=["card"],
+                mode="payment",
+                line_items=[{
+                    "price": price,
+                    "quantity": 1
+                }], )
+            return RedirectResponse(checkout_session.url, status_code=303)
+
+    except Exception as e:
+        print(e)
+        return templates.TemplateResponse('v2_error.html', {"request": request})
 
 
 @app.get("/success")
@@ -371,7 +371,7 @@ async def scan_tweets(request: Request, username: Optional[bytes] = Cookie(None)
     df = df.drop_duplicates()
 
     # calc prof count
-    if df.Text.values[0] == "Great work, we've found no controversial tweets in your timeline!":
+    if df.Text.values[0] == "Great work, we've found no controversial tweets in your timeline! Please exit this page":
         p_count = 0
     else:
         p_count = str(df.shape[0])
