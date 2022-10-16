@@ -107,7 +107,12 @@ def getTweets(user_id, client, username):
 
     # write to sql
     con = sqlite3.connect("tweets.db")
+    # tweets
     prof_df.to_sql(name=username, con=con, if_exists='replace')
+    # log
+    pd.DataFrame([[username, len(timeline_df), datetime.datetime.now().strftime("%d/%m/%y %H:%M:%S")]],
+                 columns=['user', 'tweets_pulled', 'timestamp']).to_sql(name= 'cmt_log', con=con, if_exists='append')
+
 
     print('Processing Complete')
 
